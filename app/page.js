@@ -1144,7 +1144,8 @@ export default function Home() {
   }
 
   function resignJob() {
-    setProfile((p) => ({ ...p, jobSignature: null }));
+    // 목표(직업)를 새로 정하는 것이므로, 그 전까지 쌓아온 EXP는 새 목표를 위해 리셋한다
+    setProfile((p) => ({ ...p, jobSignature: null, exp: 0 }));
   }
 
   function handleRewardChange(field, value) {
