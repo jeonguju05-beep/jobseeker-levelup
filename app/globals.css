@@ -68,6 +68,39 @@
   animation: shake 0.6s ease-in-out infinite;
 }
 
+/* 알 껍질이 사방으로 튀는 부화 축하 연출 (LV9 → LV10) */
+@keyframes shard-fly {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--shard-x, 40px), var(--shard-y, -40px)) rotate(220deg)
+      scale(0.4);
+    opacity: 0;
+  }
+}
+
+.animate-shard {
+  animation: shard-fly 0.9s ease-out forwards;
+}
+
+@keyframes hatch-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.animate-hatch-glow {
+  animation: hatch-glow 1.6s ease-in-out infinite;
+}
+
 /* 네이티브 select 드롭다운 팝업은 브라우저가 배경을 밝은 회색으로 강제하는 경우가 있어,
    부모의 밝은 글자색(text-cyan-50 등)이 그대로 상속되면 글자가 안 보인다.
    옵션 목록만 명시적으로 어두운 글자/밝은 배경으로 고정해 항상 읽히게 한다. */

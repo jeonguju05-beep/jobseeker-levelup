@@ -5,18 +5,18 @@ import { useEffect, useRef, useState } from "react";
 const SERVICE_NAME = "인생 게임";
 const EXP_PER_LEVEL = 100;
 
-// 레벨 구간별 성장 단계 (LV1~10 알 → LV10~40 부화 과정 → LV40+ 병아리 → 이후 새로 성장)
+// 레벨 구간별 성장 단계 (알 → 런닝+팬티 차림 → 한 겹씩 갖춰 입고 → 완전무장하고 전투 출정)
 const STAGES = [
-  { min: 1, label: "취준생", emoji: "🥚", visual: "egg" },
-  { min: 10, label: "부화 중", emoji: "🐣", visual: "eggEyes" },
-  { min: 20, label: "다리 쏘옥", emoji: "🐤", visual: "eggLegs" },
-  { min: 30, label: "거의 다 나옴", emoji: "🐥", visual: "eggHatching" },
-  { min: 40, label: "병아리 등장", emoji: "🐦", visual: "chick" },
-  { min: 50, label: "좌충우돌", emoji: "🪶" },
-  { min: 60, label: "안정 비행 연습", emoji: "🕊️" },
-  { min: 70, label: "방향 찾기", emoji: "🕊️" },
-  { min: 80, label: "멋진 비행", emoji: "🦅" },
-  { min: 90, label: "완성", emoji: "🏆" },
+  { min: 1, label: "취준생", emoji: "🥚", visual: "eggCracked" },
+  { min: 10, label: "쉬었음 취준생", emoji: "🐣", visual: "personUndies" },
+  { min: 20, label: "노력하는 취준생", emoji: "🐤", visual: "personTee" },
+  { min: 30, label: "열정있는 취준생", emoji: "🐥", visual: "personShorts" },
+  { min: 40, label: "성장하는 취준생", emoji: "🐦", visual: "personArmorTop" },
+  { min: 50, label: "잘 하고 있는 취준생", emoji: "🪶", visual: "personArmorLegs" },
+  { min: 60, label: "포기하지 않는 취준생", emoji: "🕊️", visual: "personArmorBoots" },
+  { min: 70, label: "백수 아니라 취준생", emoji: "🕊️", visual: "personHelmet" },
+  { min: 80, label: "죽기 살기로 한다 취준생", emoji: "🦅", visual: "personSword" },
+  { min: 90, label: "취준생 졸업반", emoji: "🏆", visual: "personBattleReady" },
 ];
 
 function getStage(level) {
@@ -27,235 +27,784 @@ function getStage(level) {
   return stage;
 }
 
-// 디지몬 알 느낌의 신비로운 무늬가 있는 알 (LV1~9 취준생 단계 전용, 이모지 대신 사용)
-function EggIcon({ className }) {
+// LV1~9: 알. LV1은 깨끗한 알이었다가 LV9에 가까워질수록 균열이 하나씩 더 뚜렷해진다.
+// (레벨 구간 전체를 하나의 이미지로 뭉뚱그리지 않고, level을 받아 균열 개수/진하기를 보간한다)
+function EggCrackedIcon({ className, level = 1 }) {
+  // LV1 → 0(균열 없음), LV9 → 1(균열 다 드러남)
+  const progress = Math.min(1, Math.max(0, (level - 1) / 8));
+  // start~end 구간에서 서서히 나타나다가 end 이후로는 max로 고정
+  const reveal = (start, end, max) => {
+    if (progress <= start) return 0;
+    if (progress >= end) return max;
+    return (max * (progress - start)) / (end - start);
+  };
+  const crack1 = reveal(0.05, 0.4, 0.85);
+  const crack2 = reveal(0.25, 0.55, 0.8);
+  const crack3 = reveal(0.45, 0.75, 0.7);
+  const crack4 = reveal(0.6, 0.9, 0.65);
+  const chips = reveal(0.75, 1, 0.9);
+
   return (
     <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
       <defs>
-        <radialGradient id="eggShell" cx="38%" cy="30%" r="85%">
+        <radialGradient id="eggShellCracked" cx="38%" cy="30%" r="85%">
           <stop offset="0%" stopColor="#e8dcc0" />
           <stop offset="55%" stopColor="#c9b990" />
           <stop offset="100%" stopColor="#8a7a58" />
         </radialGradient>
       </defs>
-      {/* 실제 공룡알처럼 길쭉한 타원 + 돌/화석 질감의 자연스러운 얼룩 */}
-      <ellipse cx="50" cy="68" rx="42" ry="58" fill="url(#eggShell)" />
+      <ellipse cx="50" cy="70" rx="42" ry="56" fill="url(#eggShellCracked)" />
       <ellipse
         cx="35"
-        cy="42"
+        cy="44"
         rx="7"
         ry="5"
         fill="#7c6a45"
         opacity="0.4"
-        transform="rotate(20 35 42)"
+        transform="rotate(20 35 44)"
       />
       <ellipse
         cx="63"
-        cy="55"
+        cy="57"
         rx="6"
         ry="4"
         fill="#5f5236"
         opacity="0.35"
-        transform="rotate(-15 63 55)"
+        transform="rotate(-15 63 57)"
       />
-      <ellipse
-        cx="45"
-        cy="82"
-        rx="8"
-        ry="5"
-        fill="#7c6a45"
-        opacity="0.35"
-        transform="rotate(10 45 82)"
-      />
-      <ellipse cx="30" cy="97" rx="5" ry="4" fill="#5f5236" opacity="0.3" />
-      <ellipse cx="68" cy="92" rx="6" ry="4" fill="#7c6a45" opacity="0.3" />
-      <ellipse cx="52" cy="30" rx="4" ry="3" fill="#5f5236" opacity="0.3" />
-      <circle cx="40" cy="60" r="1.3" fill="#5f5236" opacity="0.4" />
-      <circle cx="58" cy="70" r="1.1" fill="#5f5236" opacity="0.4" />
-      <circle cx="46" cy="95" r="1.2" fill="#5f5236" opacity="0.4" />
-      <circle cx="62" cy="40" r="1" fill="#5f5236" opacity="0.4" />
-      <circle cx="30" cy="70" r="1" fill="#5f5236" opacity="0.4" />
-      <ellipse cx="34" cy="34" rx="11" ry="16" fill="white" opacity="0.18" />
-      {/* 서서히 금이 가는 잔금 */}
+      <ellipse cx="30" cy="99" rx="5" ry="4" fill="#5f5236" opacity="0.3" />
+      <ellipse cx="68" cy="94" rx="6" ry="4" fill="#7c6a45" opacity="0.3" />
+      <ellipse cx="34" cy="36" rx="11" ry="16" fill="white" opacity="0.18" />
+      {/* 레벨이 오를수록 하나씩 더 뚜렷해지는 균열 */}
       <path
-        d="M42 24 L47 38 L39 46 L46 58"
+        d="M40 18 L46 34 L37 44 L45 58 L36 66"
         fill="none"
-        stroke="#5f5236"
+        stroke="#4a3f28"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={crack1}
+      />
+      <path
+        d="M62 22 L57 38 L66 50 L58 62"
+        fill="none"
+        stroke="#4a3f28"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={crack2}
+      />
+      <path
+        d="M55 96 L61 108 L52 116"
+        fill="none"
+        stroke="#4a3f28"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={crack3}
+      />
+      <path
+        d="M30 70 L22 78 L28 90"
+        fill="none"
+        stroke="#4a3f28"
         strokeWidth="2"
         strokeLinecap="round"
-        opacity="0.6"
+        strokeLinejoin="round"
+        opacity={crack4}
       />
+      {/* LV9에 가까워져야만 보이는, 떨어져 나가려는 껍질 조각들 */}
       <path
-        d="M58 96 L63 106 L55 112"
-        fill="none"
-        stroke="#5f5236"
-        strokeWidth="2"
-        strokeLinecap="round"
-        opacity="0.55"
-      />
-    </svg>
-  );
-}
-
-// LV10~20: 껍질이 갈라진 틈 사이로 눈이 보이는 알
-function EggEyesIcon({ className }) {
-  return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      <defs>
-        <radialGradient id="eggShell2" cx="38%" cy="30%" r="85%">
-          <stop offset="0%" stopColor="#e8dcc0" />
-          <stop offset="55%" stopColor="#c9b990" />
-          <stop offset="100%" stopColor="#8a7a58" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="50" cy="72" rx="42" ry="54" fill="url(#eggShell2)" />
-      <ellipse cx="45" cy="82" rx="8" ry="5" fill="#7c6a45" opacity="0.35" />
-      <ellipse cx="66" cy="95" rx="6" ry="4" fill="#5f5236" opacity="0.3" />
-      <ellipse cx="32" cy="95" rx="5" ry="4" fill="#7c6a45" opacity="0.3" />
-      {/* 위쪽이 깨져서 벌어진 어두운 틈 */}
-      <path d="M20 34 Q50 14 80 34 Q66 28 50 28 Q34 28 20 34 Z" fill="#3f3626" />
-      {/* 튀어나온 껍질 파편 */}
-      <path d="M18 36 L30 14 L38 30 Z" fill="#c9b990" />
-      <path d="M82 36 L70 14 L62 30 Z" fill="#c9b990" />
-      {/* 틈 사이로 보이는 눈 두 개 */}
-      <circle cx="41" cy="30" r="4.5" fill="#1c1917" />
-      <circle cx="59" cy="30" r="4.5" fill="#1c1917" />
-      <circle cx="42.5" cy="28.3" r="1.3" fill="white" />
-      <circle cx="60.5" cy="28.3" r="1.3" fill="white" />
-    </svg>
-  );
-}
-
-// LV20~30: 껍질 아래로 다리가 쏙 나온 상태
-function EggLegsIcon({ className }) {
-  return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      <defs>
-        <radialGradient id="eggShell3" cx="38%" cy="30%" r="85%">
-          <stop offset="0%" stopColor="#e8dcc0" />
-          <stop offset="55%" stopColor="#c9b990" />
-          <stop offset="100%" stopColor="#8a7a58" />
-        </radialGradient>
-      </defs>
-      {/* 다리 */}
-      <rect x="38" y="98" width="5" height="16" rx="2" fill="#f59e0b" />
-      <rect x="57" y="98" width="5" height="16" rx="2" fill="#f59e0b" />
-      <path d="M35 114 L40 114 L44 120 L34 120 Z" fill="#ea580c" />
-      <path d="M54 114 L59 114 L63 120 L53 120 Z" fill="#ea580c" />
-      {/* 몸통은 아직 껍질 안 */}
-      <ellipse cx="50" cy="62" rx="40" ry="50" fill="url(#eggShell3)" />
-      <ellipse cx="35" cy="40" rx="7" ry="5" fill="#7c6a45" opacity="0.4" />
-      <ellipse cx="63" cy="52" rx="6" ry="4" fill="#5f5236" opacity="0.35" />
-      <ellipse cx="45" cy="76" rx="8" ry="5" fill="#7c6a45" opacity="0.35" />
-    </svg>
-  );
-}
-
-// LV30~40: 팔다리와 머리까지 다 나오고, 깨진 껍질 조각만 남은 상태
-function EggHatchingIcon({ className }) {
-  return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 아래쪽 남은 껍질 */}
-      <path
-        d="M20 92 Q18 118 50 116 Q82 118 80 92 Q78 78 50 76 Q22 78 20 92 Z"
+        d="M44 14 Q50 6 58 14 Q52 18 47 18 Z"
         fill="#c9b990"
+        opacity={chips}
       />
-      {/* 다리 */}
-      <rect x="40" y="104" width="5" height="14" rx="2" fill="#f59e0b" />
-      <rect x="55" y="104" width="5" height="14" rx="2" fill="#f59e0b" />
-      <path d="M37 118 L42 118 L46 124 L36 124 Z" fill="#ea580c" />
-      <path d="M52 118 L57 118 L61 124 L51 124 Z" fill="#ea580c" />
-      {/* 몸통 */}
-      <ellipse cx="50" cy="80" rx="26" ry="26" fill="#fde68a" />
-      {/* 날개 */}
-      <ellipse
-        cx="26"
-        cy="82"
-        rx="8"
-        ry="12"
-        fill="#fbbf24"
-        transform="rotate(-20 26 82)"
+      <path
+        d="M16 82 Q10 88 14 96 Q18 90 18 84 Z"
+        fill="#c9b990"
+        opacity={chips}
       />
-      <ellipse
-        cx="74"
-        cy="82"
-        rx="8"
-        ry="12"
-        fill="#fbbf24"
-        transform="rotate(20 74 82)"
-      />
-      {/* 머리 */}
-      <circle cx="50" cy="46" r="22" fill="#fde68a" />
-      {/* 부리 */}
-      <path d="M42 50 L58 50 L50 60 Z" fill="#f97316" />
-      {/* 눈 */}
-      <circle cx="41" cy="42" r="3.2" fill="#1c1917" />
-      <circle cx="59" cy="42" r="3.2" fill="#1c1917" />
-      {/* 위쪽 깨진 껍질 파편 */}
-      <path d="M28 24 L40 8 L44 26 Z" fill="#c9b990" />
-      <path d="M72 24 L60 8 L56 26 Z" fill="#c9b990" />
     </svg>
   );
 }
 
-// LV40~50: 완전히 부화한 병아리
-function ChickIcon({ className }) {
+// LV10~19: 런닝 + 팬티만 입은 캐릭터
+function PersonUndiesIcon({ className }) {
   return (
     <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 다리 */}
-      <rect x="40" y="104" width="5" height="16" rx="2" fill="#f59e0b" />
-      <rect x="55" y="104" width="5" height="16" rx="2" fill="#f59e0b" />
-      <path d="M37 118 L42 118 L46 124 L36 124 Z" fill="#ea580c" />
-      <path d="M52 118 L57 118 L61 124 L51 124 Z" fill="#ea580c" />
-      {/* 몸통 */}
-      <ellipse cx="50" cy="82" rx="30" ry="30" fill="#fde68a" />
-      {/* 날개 */}
-      <ellipse
-        cx="24"
-        cy="84"
-        rx="9"
-        ry="14"
-        fill="#fbbf24"
-        transform="rotate(-20 24 84)"
+      {/* 다리 (맨다리) */}
+      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      {/* 사각팬티 (허벅지까지 덮어서 다리가 휑해 보이지 않게) */}
+      <rect x="38" y="57" width="24" height="24" rx="7" fill="#64748b" />
+      <rect x="38" y="70" width="24" height="3" fill="#475569" opacity="0.6" />
+      {/* 팔 (맨팔) */}
+      <rect x="29" y="36" width="9" height="30" rx="4" fill="#f4c199" />
+      <rect x="62" y="36" width="9" height="30" rx="4" fill="#f4c199" />
+      {/* 런닝 */}
+      <rect x="41" y="29" width="4" height="7" fill="#f8fafc" />
+      <rect x="55" y="29" width="4" height="7" fill="#f8fafc" />
+      <rect x="37" y="33" width="26" height="30" rx="8" fill="#f8fafc" />
+      {/* 머리 */}
+      <circle cx="50" cy="22" r="13" fill="#f4c199" />
+      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
+      <path
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
       />
-      <ellipse
-        cx="76"
-        cy="84"
-        rx="9"
-        ry="14"
-        fill="#fbbf24"
-        transform="rotate(20 76 84)"
+      {/* 부스스한 머리 */}
+      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
+    </svg>
+  );
+}
+
+// LV20~29: 런닝+팬티 위에 흰 티셔츠 입은 캐릭터
+function PersonTeeIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 다리 (맨다리) */}
+      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      {/* 사각팬티 (허벅지까지 덮음) */}
+      <rect x="38" y="57" width="24" height="24" rx="7" fill="#64748b" />
+      <rect x="38" y="70" width="24" height="3" fill="#475569" opacity="0.6" />
+      {/* 팔 (맨팔, 반팔 아래로 드러남) */}
+      <rect x="29" y="36" width="9" height="30" rx="4" fill="#f4c199" />
+      <rect x="62" y="36" width="9" height="30" rx="4" fill="#f4c199" />
+      {/* 흰 티셔츠 */}
+      <rect x="35" y="32" width="30" height="34" rx="9" fill="#dc2626" />
+      <rect
+        x="27"
+        y="35"
+        width="13"
+        height="12"
+        rx="5"
+        fill="#dc2626"
+        transform="rotate(-10 33 41)"
+      />
+      <rect
+        x="60"
+        y="35"
+        width="13"
+        height="12"
+        rx="5"
+        fill="#dc2626"
+        transform="rotate(10 67 41)"
       />
       {/* 머리 */}
-      <circle cx="50" cy="42" r="24" fill="#fde68a" />
-      {/* 볏 */}
+      <circle cx="50" cy="22" r="13" fill="#f4c199" />
+      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
       <path
-        d="M46 16 Q50 6 54 16 Q52 20 50 18 Q48 20 46 16 Z"
-        fill="#f97316"
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
       />
-      {/* 부리 */}
-      <path d="M40 46 L60 46 L50 58 Z" fill="#f97316" />
-      {/* 눈 */}
-      <circle cx="40" cy="38" r="3.5" fill="#1c1917" />
-      <circle cx="60" cy="38" r="3.5" fill="#1c1917" />
-      <circle cx="41.3" cy="36.3" r="1" fill="white" />
-      <circle cx="61.3" cy="36.3" r="1" fill="white" />
+      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
+    </svg>
+  );
+}
+
+// LV30~39: 앞의 차림에 반바지까지 입은 캐릭터
+function PersonShortsIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 다리 (맨다리, 종아리는 그대로) */}
+      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      {/* 팔 */}
+      <rect x="29" y="36" width="9" height="30" rx="4" fill="#f4c199" />
+      <rect x="62" y="36" width="9" height="30" rx="4" fill="#f4c199" />
+      {/* 흰 티셔츠 */}
+      <rect x="35" y="32" width="30" height="34" rx="9" fill="#dc2626" />
+      <rect
+        x="27"
+        y="35"
+        width="13"
+        height="12"
+        rx="5"
+        fill="#dc2626"
+        transform="rotate(-10 33 41)"
+      />
+      <rect
+        x="60"
+        y="35"
+        width="13"
+        height="12"
+        rx="5"
+        fill="#dc2626"
+        transform="rotate(10 67 41)"
+      />
+      {/* 반바지 */}
+      <rect x="37" y="60" width="26" height="32" rx="6" fill="#1d4ed8" />
+      {/* 머리 */}
+      <circle cx="50" cy="22" r="13" fill="#f4c199" />
+      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
+      <path
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
+    </svg>
+  );
+}
+
+// LV40~49: 앞의 차림에 상의 갑옷(가슴판+어깨보호대)까지 갖춘 캐릭터
+function PersonArmorTopIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 다리 (맨다리) */}
+      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
+      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      {/* 반바지 */}
+      <rect x="37" y="60" width="26" height="32" rx="6" fill="#1d4ed8" />
+      {/* 팔 (맨팔, 어깨보호대 아래로) */}
+      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
+      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
+      {/* 가슴판 갑옷 */}
+      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
+      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
+      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
+      <circle cx="41" cy="40" r="1.5" fill="#475569" />
+      <circle cx="59" cy="40" r="1.5" fill="#475569" />
+      <circle cx="41" cy="52" r="1.5" fill="#475569" />
+      <circle cx="59" cy="52" r="1.5" fill="#475569" />
+      {/* 어깨보호대(견갑) */}
+      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      {/* 머리 */}
+      <circle cx="50" cy="22" r="13" fill="#f4c199" />
+      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
+      <path
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
+    </svg>
+  );
+}
+
+// LV50~59: 앞의 차림에 하의 갑옷(허벅지·정강이 보호대)까지 갖춘 캐릭터
+function PersonArmorLegsIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 맨발 (신발 아직) */}
+      <ellipse cx="44" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      <ellipse cx="56" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
+      {/* 정강이 보호대 */}
+      <rect x="39" y="80" width="10" height="32" rx="4" fill="#94a3b8" />
+      <rect x="51" y="80" width="10" height="32" rx="4" fill="#94a3b8" />
+      {/* 무릎 보호대 */}
+      <circle cx="44" cy="81" r="5" fill="#64748b" />
+      <circle cx="56" cy="81" r="5" fill="#64748b" />
+      {/* 허벅지 보호대 */}
+      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
+      {/* 팔 */}
+      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
+      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
+      {/* 가슴판 갑옷 */}
+      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
+      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
+      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
+      <circle cx="41" cy="40" r="1.5" fill="#475569" />
+      <circle cx="59" cy="40" r="1.5" fill="#475569" />
+      <circle cx="41" cy="52" r="1.5" fill="#475569" />
+      <circle cx="59" cy="52" r="1.5" fill="#475569" />
+      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      {/* 머리 */}
+      <circle cx="50" cy="22" r="13" fill="#f4c199" />
+      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
+      <path
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
+    </svg>
+  );
+}
+
+// LV60~69: 앞의 갑옷 차림에 갑옷 신발까지 신은 캐릭터
+function PersonArmorBootsIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 갑옷 신발 */}
+      <rect x="37" y="106" width="13" height="12" rx="3" fill="#475569" />
+      <rect x="50" y="106" width="13" height="12" rx="3" fill="#475569" />
+      <rect x="38" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
+      <rect x="51" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
+      {/* 정강이 보호대 */}
+      <rect x="39" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
+      <rect x="51" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
+      <circle cx="44" cy="81" r="5" fill="#64748b" />
+      <circle cx="56" cy="81" r="5" fill="#64748b" />
+      {/* 허벅지 보호대 */}
+      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
+      {/* 팔 */}
+      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
+      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
+      {/* 가슴판 갑옷 */}
+      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
+      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
+      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
+      <circle cx="41" cy="40" r="1.5" fill="#475569" />
+      <circle cx="59" cy="40" r="1.5" fill="#475569" />
+      <circle cx="41" cy="52" r="1.5" fill="#475569" />
+      <circle cx="59" cy="52" r="1.5" fill="#475569" />
+      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      {/* 머리 */}
+      <circle cx="50" cy="22" r="13" fill="#f4c199" />
+      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
+      <path
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
+    </svg>
+  );
+}
+
+// LV70~79: 앞의 갑옷 차림에 투구까지 쓴 캐릭터
+function PersonHelmetIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 갑옷 신발 */}
+      <rect x="37" y="106" width="13" height="12" rx="3" fill="#475569" />
+      <rect x="50" y="106" width="13" height="12" rx="3" fill="#475569" />
+      <rect x="38" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
+      <rect x="51" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
+      {/* 정강이 보호대 */}
+      <rect x="39" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
+      <rect x="51" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
+      <circle cx="44" cy="81" r="5" fill="#64748b" />
+      <circle cx="56" cy="81" r="5" fill="#64748b" />
+      {/* 허벅지 보호대 */}
+      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
+      {/* 팔 */}
+      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
+      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
+      {/* 가슴판 갑옷 */}
+      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
+      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
+      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
+      <circle cx="41" cy="40" r="1.5" fill="#475569" />
+      <circle cx="59" cy="40" r="1.5" fill="#475569" />
+      <circle cx="41" cy="52" r="1.5" fill="#475569" />
+      <circle cx="59" cy="52" r="1.5" fill="#475569" />
+      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      {/* 투구 (얼굴 아래쪽만 남기고 덮음) */}
+      <path
+        d="M37 24 Q37 6 50 6 Q63 6 63 24 Q63 29 59 31 L41 31 Q37 29 37 24 Z"
+        fill="#94a3b8"
+      />
+      <rect x="42" y="19" width="16" height="4" rx="2" fill="#1c2431" />
+      <circle cx="46" cy="21" r="0.8" fill="#e2e8f0" />
+      <circle cx="54" cy="21" r="0.8" fill="#e2e8f0" />
+      <path d="M48 4 Q50 -2 52 4 L52 8 L48 8 Z" fill="#7f1d1d" />
+      <path
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// LV80~89: 앞의 차림에 칼까지 챙긴 캐릭터
+function PersonSwordIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 칼 (오른쪽) */}
+      <path d="M70 8 L74 8 L72 30 Z" fill="#cbd5e1" />
+      <rect x="70" y="30" width="4" height="42" fill="#e2e8f0" />
+      <rect x="66" y="70" width="12" height="4" rx="2" fill="#78350f" />
+      <rect x="70.5" y="73" width="3" height="10" fill="#4a3728" />
+      <circle cx="72" cy="85" r="3" fill="#eab308" />
+      {/* 갑옷 신발 */}
+      <rect x="37" y="106" width="13" height="12" rx="3" fill="#475569" />
+      <rect x="50" y="106" width="13" height="12" rx="3" fill="#475569" />
+      {/* 정강이 보호대 */}
+      <rect x="39" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
+      <rect x="51" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
+      <circle cx="44" cy="81" r="5" fill="#64748b" />
+      <circle cx="56" cy="81" r="5" fill="#64748b" />
+      {/* 허벅지 보호대 */}
+      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
+      {/* 팔 */}
+      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
+      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
+      {/* 가슴판 갑옷 */}
+      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
+      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
+      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
+      <circle cx="41" cy="40" r="1.5" fill="#475569" />
+      <circle cx="59" cy="40" r="1.5" fill="#475569" />
+      <circle cx="41" cy="52" r="1.5" fill="#475569" />
+      <circle cx="59" cy="52" r="1.5" fill="#475569" />
+      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
+      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
+      {/* 투구 */}
+      <path
+        d="M37 24 Q37 6 50 6 Q63 6 63 24 Q63 29 59 31 L41 31 Q37 29 37 24 Z"
+        fill="#94a3b8"
+      />
+      <rect x="42" y="19" width="16" height="4" rx="2" fill="#1c2431" />
+      <circle cx="46" cy="21" r="0.8" fill="#e2e8f0" />
+      <circle cx="54" cy="21" r="0.8" fill="#e2e8f0" />
+      <path d="M48 4 Q50 -2 52 4 L52 8 L48 8 Z" fill="#7f1d1d" />
+      <path
+        d="M45 27 Q50 30 55 27"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// LV90+: 완전무장하고 옆모습으로 힘차게 뛰어나가는 캐릭터
+function PersonBattleReadyIcon({ className, attacking }) {
+  if (attacking) return <PersonDoorThrustIcon className={className} />;
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 스피드 잔상 (뒤쪽) */}
+      <path
+        d="M2 35 L20 35"
+        stroke="#94a3b8"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.4"
+      />
+      <path
+        d="M0 50 L16 50"
+        stroke="#94a3b8"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.3"
+      />
+      <path
+        d="M4 65 L18 65"
+        stroke="#94a3b8"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.25"
+      />
+
+      {/* 뒤쪽 다리: 허벅지 + 정강이, 뒤로 차며 접힌 자세 */}
+      <rect
+        x="46"
+        y="70"
+        width="8"
+        height="15"
+        rx="4"
+        fill="#94a3b8"
+        transform="rotate(35 50 70)"
+      />
+      <rect
+        x="36"
+        y="80.6"
+        width="7"
+        height="17"
+        rx="3"
+        fill="#94a3b8"
+        transform="rotate(70 39.4 80.6)"
+      />
+      <ellipse
+        cx="25"
+        cy="88"
+        rx="6.5"
+        ry="4"
+        fill="#475569"
+        transform="rotate(65 25 88)"
+      />
+
+      {/* 앞쪽 다리: 허벅지 + 정강이, 앞으로 크게 내딛는 자세 */}
+      <rect
+        x="44"
+        y="70"
+        width="8"
+        height="16"
+        rx="4"
+        fill="#94a3b8"
+        transform="rotate(-25 48 70)"
+      />
+      <rect
+        x="51"
+        y="84.5"
+        width="7"
+        height="18"
+        rx="3"
+        fill="#94a3b8"
+        transform="rotate(-45 54.5 84.5)"
+      />
+      <ellipse
+        cx="67"
+        cy="97"
+        rx="7"
+        ry="4"
+        fill="#475569"
+        transform="rotate(-45 67 97)"
+      />
+
+      {/* 몸통 (앞으로 기울인 가슴판 갑옷) */}
+      <ellipse
+        cx="50"
+        cy="55"
+        rx="17"
+        ry="22"
+        fill="#94a3b8"
+        transform="rotate(-12 50 55)"
+      />
+      <rect
+        x="46"
+        y="40"
+        width="3"
+        height="26"
+        rx="1.5"
+        fill="#e2e8f0"
+        opacity="0.5"
+        transform="rotate(-12 50 55)"
+      />
+      <circle cx="42" cy="48" r="1.4" fill="#475569" transform="rotate(-12 50 55)" />
+      <circle cx="42" cy="60" r="1.4" fill="#475569" transform="rotate(-12 50 55)" />
+
+      {/* 뒤쪽 팔: 뒤로 힘차게 젖힌 자세 (머리와 안 겹치도록 수평에 가깝게) */}
+      <rect
+        x="56"
+        y="40"
+        width="8"
+        height="22"
+        rx="4"
+        fill="#94a3b8"
+        transform="rotate(90 60 40)"
+      />
+
+      {/* 앞쪽 팔 + 칼: 앞으로 뻗은 자세 */}
+      <rect
+        x="42"
+        y="40"
+        width="8"
+        height="22"
+        rx="4"
+        fill="#94a3b8"
+        transform="rotate(-60 46 40)"
+      />
+      <circle cx="65" cy="51" r="4" fill="#f4c199" />
+      <path d="M65 49 L94 43 L96 47 L67 53 Z" fill="#cbd5e1" />
+      <rect x="59" y="48" width="8" height="5" rx="2" fill="#78350f" />
+
+      {/* 머리 (피부, 옆모습) */}
+      <circle cx="53" cy="26" r="11" fill="#f4c199" />
+
+      {/* 투구: 머리 전체를 감싸는 돔 (얼굴 쪽만 창처럼 트여 있음) */}
+      <ellipse cx="51" cy="23" rx="13.5" ry="15" fill="#94a3b8" />
+      <ellipse cx="51" cy="23" rx="13.5" ry="15" fill="none" stroke="#475569" strokeWidth="1" opacity="0.6" />
+      {/* 얼굴 창 (피부 노출부 + 눈) */}
+      <circle cx="60" cy="27" r="6.2" fill="#f4c199" />
+      <circle cx="63.5" cy="26" r="1.5" fill="#1c1917" />
+      {/* 투구 뒤쪽으로 휘날리는 장식 깃 */}
+      <path d="M40 16 Q24 18 18 27 Q32 22 42 22 Z" fill="#7f1d1d" />
+      {/* 투구 이마 능선 장식 */}
+      <path
+        d="M48 9 Q51 6 54 9"
+        fill="none"
+        stroke="#cbd5e1"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// LV90+ 문 챌린지 중: 뛰어가는 대신 눈앞의 문을 검으로 힘껏 찌르는 자세
+function PersonDoorThrustIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 앞쪽에 서 있는 문 */}
+      <rect x="78" y="18" width="20" height="70" rx="2" fill="#7c4a2d" />
+      <rect x="81" y="22" width="14" height="30" rx="1.5" fill="#5c3a22" />
+      <rect x="81" y="56" width="14" height="24" rx="1.5" fill="#5c3a22" />
+      <circle cx="84" cy="54" r="1.6" fill="#e2b76b" />
+      {/* 칼끝이 닿는 충격 효과 */}
+      <path
+        d="M74 44 L80 40 M74 48 L82 48 M74 52 L80 56"
+        stroke="#fde68a"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      {/* 런지 자세: 뒤쪽 다리는 곧게 뻗어 버티고, 앞쪽 다리는 깊게 굽힘 */}
+      <rect
+        x="45"
+        y="70"
+        width="9"
+        height="42"
+        rx="4"
+        fill="#94a3b8"
+        transform="rotate(48 49.5 70)"
+      />
+      <ellipse
+        cx="16"
+        cy="98"
+        rx="7"
+        ry="4.5"
+        fill="#475569"
+        transform="rotate(20 16 98)"
+      />
+
+      <rect
+        x="44"
+        y="70"
+        width="9"
+        height="17"
+        rx="4"
+        fill="#94a3b8"
+        transform="rotate(-35 48.5 70)"
+      />
+      <rect
+        x="53"
+        y="84"
+        width="8"
+        height="21"
+        rx="3.5"
+        fill="#94a3b8"
+        transform="rotate(-8 57 84)"
+      />
+      <ellipse cx="60" cy="106" rx="7.5" ry="4.5" fill="#475569" />
+
+      {/* 몸통: 찌르기 반동으로 살짝 앞으로 숙인 가슴판 갑옷 */}
+      <ellipse
+        cx="49"
+        cy="55"
+        rx="17"
+        ry="22"
+        fill="#94a3b8"
+        transform="rotate(-6 49 55)"
+      />
+      <rect
+        x="45"
+        y="39"
+        width="3"
+        height="26"
+        rx="1.5"
+        fill="#e2e8f0"
+        opacity="0.5"
+        transform="rotate(-6 49 55)"
+      />
+      <circle cx="41" cy="48" r="1.4" fill="#475569" transform="rotate(-6 49 55)" />
+      <circle cx="41" cy="60" r="1.4" fill="#475569" transform="rotate(-6 49 55)" />
+
+      {/* 뒤쪽 팔: 균형을 잡으려 뒤로 당긴 자세 */}
+      <rect
+        x="54"
+        y="40"
+        width="8"
+        height="20"
+        rx="4"
+        fill="#94a3b8"
+        transform="rotate(150 58 40)"
+      />
+
+      {/* 앞쪽 팔 + 칼: 문을 향해 수평으로 완전히 뻗어 찌르는 자세 */}
+      <rect x="46" y="39" width="26" height="8" rx="4" fill="#94a3b8" />
+      <circle cx="72" cy="43" r="4" fill="#f4c199" />
+      <path d="M72 41 L98 41 L98 45 L72 45 Z" fill="#cbd5e1" />
+      <rect x="66" y="40" width="8" height="6" rx="2" fill="#78350f" />
+
+      {/* 머리 (피부, 옆모습) */}
+      <circle cx="52" cy="26" r="11" fill="#f4c199" />
+
+      {/* 투구: 머리 전체를 감싸는 돔 (얼굴 쪽만 창처럼 트여 있음) */}
+      <ellipse cx="50" cy="23" rx="13.5" ry="15" fill="#94a3b8" />
+      <ellipse cx="50" cy="23" rx="13.5" ry="15" fill="none" stroke="#475569" strokeWidth="1" opacity="0.6" />
+      {/* 얼굴 창 (피부 노출부 + 눈) */}
+      <circle cx="59" cy="27" r="6.2" fill="#f4c199" />
+      <circle cx="62.5" cy="26" r="1.5" fill="#1c1917" />
+      {/* 투구 뒤쪽으로 휘날리는 장식 깃 */}
+      <path d="M39 16 Q23 18 17 27 Q31 22 41 22 Z" fill="#7f1d1d" />
+      {/* 투구 이마 능선 장식 */}
+      <path
+        d="M47 9 Q50 6 53 9"
+        fill="none"
+        stroke="#cbd5e1"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 const STAGE_VISUALS = {
-  egg: EggIcon,
-  eggEyes: EggEyesIcon,
-  eggLegs: EggLegsIcon,
-  eggHatching: EggHatchingIcon,
-  chick: ChickIcon,
+  eggCracked: EggCrackedIcon,
+  personUndies: PersonUndiesIcon,
+  personTee: PersonTeeIcon,
+  personShorts: PersonShortsIcon,
+  personArmorTop: PersonArmorTopIcon,
+  personArmorLegs: PersonArmorLegsIcon,
+  personArmorBoots: PersonArmorBootsIcon,
+  personHelmet: PersonHelmetIcon,
+  personSword: PersonSwordIcon,
+  personBattleReady: PersonBattleReadyIcon,
 };
 
 // stage.visual이 있으면 해당 SVG로, 없으면 그냥 이모지로 표시
-function StageVisual({ stage, className }) {
+// door: 만렙(LV90) 이후 문 챌린지 중이면 뛰어가는 자세 대신 문을 찌르는 자세로 보여준다
+function StageVisual({ stage, level, className, door }) {
   const VisualComponent = STAGE_VISUALS[stage.visual];
-  if (VisualComponent) return <VisualComponent className={className} />;
+  if (VisualComponent)
+    return <VisualComponent className={className} level={level} attacking={door} />;
   return <span className={className}>{stage.emoji}</span>;
 }
 
@@ -337,14 +886,30 @@ const DEFAULT_PROFILE = {
   quest3RewardedDate: null,
   lastActiveDate: null,
   comfortRewardedDate: null,
+  door: null, // 만렙(LV90) 이후: { company, hp, maxHp } — 존재하는 동안은 EXP 대신 문 체력이 깎인다
 };
+
+// 만렙 이후 "문" 챌린지: 회사 하나당 이 정도 미션을 깨야 문이 부서진다
+const DOOR_MAX_HP = 1000;
+const DOOR_DAMAGE_PER_HIT = 100; // 미션 1건 완료 = 고정 100 데미지 (문 체력 1000 기준 10개면 클리어)
+const DOOR_LEVEL = 90;
 
 // 돌발미션: 눌렀을 때 랜덤으로 뽑히는 기분전환 퀘스트 풀
 const SURPRISE_QUESTS = [
   "오늘 감사한 일 3가지 적어보기",
-  "명언 필사하기",
-  "스트레칭 하기",
+  "마음에 드는 명언 필사하기",
+  "가볍게 스트레칭 하기",
   "할 수 있다 3번 외치기",
+  "20초간 먼 곳 바라보며 눈 쉬기",
+  "목과 어깨 천천히 돌리기",
+  "물 한 잔 마시고 오기",
+  "창문 열고 심호흡 3번 하기",
+  "좋아하는 노래 한 곡 듣기",
+  "손가락 10개 접었다가 펴기",
+  "1분간 눈 감고 쉬기",
+  "자리에서 일어나 기지개 켜기",
+  "좋아하는 향 맡으며 잠깐 쉬기",
+  "창밖 풍경 1분 바라보기",
 ];
 
 // 미션 완료 시 캐릭터가 말풍선으로 건네는 위로/응원 한마디 (랜덤)
@@ -357,6 +922,16 @@ const COMFORT_MESSAGES = [
   "포기 안 하는 것만으로도 대단해",
   "한 걸음씩 잘 가고 있어",
   "충분히 잘하고 있어",
+];
+
+// 오늘의 미션을 전부 완료한 순간에 건네는 축하 한마디 (랜덤 레퍼토리)
+const DAY_COMPLETE_MESSAGES = [
+  "수고했어, 오늘도!",
+  "가보자고!",
+  "잘하고 있어!",
+  "고생많았어!",
+  "화이팅!",
+  "충분히 잘하고 있어!",
 ];
 
 // 미션 유형(hunt 제외)별 표시 스타일: 카드 테두리 / 체크박스 / EXP 뱃지 / 이름 앞 아이콘
@@ -428,7 +1003,7 @@ const PRIORITY_META = {
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 // 일정관리 탭의 달력: 마감일이 있는 날짜에 점 표시
-function CalendarView({ monthDate, onChangeMonth, deadlines }) {
+function CalendarView({ monthDate, onChangeMonth, deadlines, selectedDate, onSelectDate }) {
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
   const cells = buildMonthCells(monthDate);
@@ -436,7 +1011,6 @@ function CalendarView({ monthDate, onChangeMonth, deadlines }) {
 
   return (
     <div className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] backdrop-blur-2xl">
-      <HudCorners />
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={() => onChangeMonth(-1)}
@@ -470,58 +1044,29 @@ function CalendarView({ monthDate, onChangeMonth, deadlines }) {
           if (day === null) return <div key={i} className="h-10" />;
           const cellIso = isoDate(year, month, day);
           const isToday = cellIso === today;
+          const isSelected = cellIso === selectedDate;
           const hasDeadline = deadlines.some((d) => d.date === cellIso);
           return (
-            <div
+            <button
               key={i}
-              className={`relative flex h-10 flex-col items-center justify-center rounded-lg text-xs ${
-                isToday
-                  ? "border border-cyan-300/70 bg-cyan-500/10 font-bold text-cyan-100"
-                  : "text-slate-300"
+              type="button"
+              onClick={() => onSelectDate?.(cellIso)}
+              className={`relative flex h-10 flex-col items-center justify-center rounded-lg text-xs transition ${
+                isSelected
+                  ? "border border-cyan-300/80 bg-gradient-to-r from-cyan-500 to-violet-600 font-bold text-white shadow-[0_0_12px_rgba(34,211,238,0.5)]"
+                  : isToday
+                    ? "border border-cyan-300/70 bg-cyan-500/10 font-bold text-cyan-100"
+                    : "text-slate-300 hover:bg-white/5"
               }`}
             >
               {day}
               {hasDeadline && (
                 <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.8)]" />
               )}
-            </div>
+            </button>
           );
         })}
       </div>
-    </div>
-  );
-}
-
-// SF HUD 느낌의 모서리 브래킷 장식 — relative 부모 안에 넣으면 네 귀퉁이에 붙는다
-function HudCorners({ variant = "md", tone = "cyan" }) {
-  const size = variant === "sm" ? "h-2.5 w-2.5" : "h-3.5 w-3.5";
-  const toneColor =
-    tone === "amber"
-      ? "border-amber-300/80"
-      : tone === "rose"
-        ? "border-rose-300/80"
-        : "border-cyan-300/80";
-  const common = `pointer-events-none absolute ${size} ${toneColor}`;
-  return (
-    <>
-      <span className={`${common} -left-px -top-px border-l-2 border-t-2`} />
-      <span className={`${common} -right-px -top-px border-r-2 border-t-2`} />
-      <span className={`${common} -left-px -bottom-px border-l-2 border-b-2`} />
-      <span className={`${common} -right-px -bottom-px border-r-2 border-b-2`} />
-    </>
-  );
-}
-
-// EXP 게이지 안에 얇은 구분선을 깔아 HUD 계기판처럼 분절된 느낌을 줌
-function GaugeSegments({ count = 10 }) {
-  return (
-    <div className="pointer-events-none absolute inset-0 flex">
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="flex-1 border-r border-black/40 last:border-r-0"
-        />
-      ))}
     </div>
   );
 }
@@ -567,12 +1112,17 @@ function SignaturePad({ onConfirm }) {
     const { x, y } = getPos(e);
     ctx.strokeStyle = "#67e8f9";
     ctx.shadowColor = "#22d3ee";
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 4;
     ctx.lineWidth = 4;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineTo(x, y);
     ctx.stroke();
+    // 경로를 여기서 다시 시작해야 다음 구간에서 지금까지 그린 전체 선을 또 겹쳐 그리지 않는다.
+    // 안 그러면 stroke()가 매번 시작점부터 누적된 경로 전체를 다시 그려서, 마우스를 천천히
+    // 움직인 구간일수록 같은 자리를 여러 번 덧칠해 번지고 두께가 들쭉날쭉해 보인다.
+    ctx.beginPath();
+    ctx.moveTo(x, y);
     if (!hasDrawnRef.current) {
       hasDrawnRef.current = true;
       setHasDrawn(true);
@@ -604,7 +1154,6 @@ function SignaturePad({ onConfirm }) {
             {SERVICE_NAME}
           </h1>
           <p className="relative mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm leading-relaxed text-cyan-50 backdrop-blur-2xl">
-            <HudCorners variant="sm" />
             ✦ 목표로 하는 직업을 마우스로 직접 적어주세요.
             <br />
             잘 쓰지 않아도 괜찮아요
@@ -614,7 +1163,6 @@ function SignaturePad({ onConfirm }) {
         </div>
 
         <div className="relative">
-          <HudCorners />
           <canvas
             ref={canvasRef}
             width={600}
@@ -693,7 +1241,6 @@ function RewardSetup({ profile, onChangeReward, onDone }) {
         </div>
 
         <div className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-2xl">
-          <HudCorners />
           <div className="flex flex-col gap-3">
             {fields.map((f) => (
               <label key={f.key} className="text-[11px] text-slate-400">
@@ -730,10 +1277,21 @@ export default function Home() {
   const [giftQueue, setGiftQueue] = useState([]); // [{ id, label, reward, opened }]
   const [comfortMsg, setComfortMsg] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [showResignConfirm, setShowResignConfirm] = useState(false);
+  const [showCharacterZoom, setShowCharacterZoom] = useState(false);
+  const [showHatchCelebration, setShowHatchCelebration] = useState(false);
+  const [showDoorSetup, setShowDoorSetup] = useState(false);
+  const [doorCompanyInput, setDoorCompanyInput] = useState("");
+  const [showDoorBreak, setShowDoorBreak] = useState(false);
+  const [doorBrokenCompany, setDoorBrokenCompany] = useState("");
+  const prevDoorRef = useRef(null);
+
+  // 수련(hunt) 집중 모드: 큰 타이머로 화면을 꽉 채워 몰입시키는 뽀모도로 스타일 팝업
+  const [focusHuntId, setFocusHuntId] = useState(null);
+  const [tabAway, setTabAway] = useState(false);
 
   const [newContent, setNewContent] = useState("");
   const [newType, setNewType] = useState("general");
-  const [newTargetMinutes, setNewTargetMinutes] = useState(10);
   const [newPriority, setNewPriority] = useState("today");
 
   // AI 피드백 (던전/격투신청 미션 카드에서 자소서·답변 붙여넣고 피드백 받기)
@@ -833,6 +1391,58 @@ export default function Home() {
     localStorage.setItem("deadlines", JSON.stringify(deadlines));
   }, [deadlines, loaded]);
 
+  // 만렙(LV90) 이후 문이 떠 있는 동안은 EXP가 늘어나는 대신, 미션 종류·EXP값과 무관하게
+  // 완료 1회당 문 체력을 1씩 깎는다. 문이 없으면 지금까지처럼 EXP를 그대로 더한다.
+  function gainProgress(prevProfile, expAmount) {
+    if (prevProfile.door) {
+      return {
+        ...prevProfile,
+        door: {
+          ...prevProfile.door,
+          hp: Math.max(0, prevProfile.door.hp - DOOR_DAMAGE_PER_HIT),
+        },
+      };
+    }
+    return { ...prevProfile, exp: prevProfile.exp + expAmount };
+  }
+
+  // 문이 0체력이 된 "순간"에만 한 번 축하 연출을 띄우고 문을 치운다 (다음 회사에 재도전 가능)
+  useEffect(() => {
+    if (!loaded) return;
+    if (
+      profile.door &&
+      profile.door.hp <= 0 &&
+      prevDoorRef.current &&
+      prevDoorRef.current.hp > 0
+    ) {
+      setDoorBrokenCompany(profile.door.company);
+      setShowDoorBreak(true);
+      setProfile((p) => ({ ...p, door: null }));
+    }
+    prevDoorRef.current = profile.door;
+  }, [profile.door, loaded]);
+
+  // 만렙(LV90) 도달 후 도전 중인 문이 없으면 회사명을 입력받는 문 등장 모달을 띄운다
+  useEffect(() => {
+    if (!loaded) return;
+    const level = levelFromExp(profile.exp);
+    if (level >= DOOR_LEVEL && !profile.door && !showDoorSetup && !showDoorBreak) {
+      setShowDoorSetup(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.exp, profile.door, loaded, showDoorBreak]);
+
+  function startDoorChallenge() {
+    const company = doorCompanyInput.trim();
+    if (!company) return;
+    setProfile((p) => ({
+      ...p,
+      door: { company, hp: DOOR_MAX_HP, maxHp: DOOR_MAX_HP },
+    }));
+    setShowDoorSetup(false);
+    setDoorCompanyInput("");
+  }
+
   function queueGift(label, reward) {
     if (!reward) return; // 해당 항목에 설정된 보상이 없으면 선물 상자는 띄우지 않음
     setGiftQueue((q) => [
@@ -857,6 +1467,10 @@ export default function Home() {
       const stage = getStage(level);
       setLevelUpMsg(`LV UP! LV.${level} · ${stage.label}`);
       queueGift("레벨업 선물", profile.levelUpReward);
+      // LV9(알) → LV10(런닝+사각팬티) 전환은 알을 깨고 나오는 특별한 순간이라 따로 축하해준다
+      if (prevLevelRef.current < 10 && level >= 10) {
+        setShowHatchCelebration(true);
+      }
       prevLevelRef.current = level;
       const t = setTimeout(() => setLevelUpMsg(""), 2500);
       return () => clearTimeout(t);
@@ -881,7 +1495,11 @@ export default function Home() {
     if (!loaded) return;
     const nowAllDone = missions.length > 0 && missions.every((m) => m.isDone);
     if (nowAllDone && !prevAllDoneRef.current) {
-      setComfortMsg("수고했어, 오늘도!");
+      setComfortMsg(
+        DAY_COMPLETE_MESSAGES[
+          Math.floor(Math.random() * DAY_COMPLETE_MESSAGES.length)
+        ]
+      );
     }
     prevAllDoneRef.current = nowAllDone;
   }, [missions, loaded]);
@@ -910,33 +1528,53 @@ export default function Home() {
     profileRef.current = profile;
   }, [profile]);
 
-  // 사냥 타이머: 1초마다 running 중인 미션의 경과시간 증가 + 20분(1200초)당 5exp 적립
+  // 사냥 타이머: 1초마다 running 중인 미션의 경과시간 증가.
+  // 도중에 조금씩 EXP를 주지 않고, 목표 시간을 끝까지 다 채운 순간에만 expValue만큼 지급한다.
+  // 25분 목표를 다 채우면 바로 멈추지 않고 5분 휴식 타이머로 이어진다 (뽀모도로 스타일).
   useEffect(() => {
     const timer = setInterval(() => {
       // setState 업데이트 함수 안에서 다른 setState를 호출하면 개발 모드(Strict Mode)에서
       // 함수가 두 번 실행되어 EXP가 두 배로 적립되므로, 계산은 밖에서 순수하게 하고
       // setMissions/setProfile은 결과값으로 한 번씩만 호출한다.
       let expGain = 0;
+      let breakJustFinished = false;
       const next = missionsRef.current.map((m) => {
         if (m.type !== "hunt" || !m.running) return m;
+
+        if (m.onBreak) {
+          const breakElapsed = m.breakElapsedSeconds + 1;
+          const breakDone = breakElapsed >= 300; // 5분
+          if (breakDone) breakJustFinished = true;
+          return {
+            ...m,
+            breakElapsedSeconds: breakElapsed,
+            onBreak: !breakDone,
+            running: !breakDone,
+          };
+        }
+
         const elapsed = m.elapsedSeconds + 1;
-        if (elapsed % 240 === 0) expGain += 1; // 240초(4분)마다 1exp = 20분당 5exp
         const targetReached =
           m.targetMinutes && elapsed >= m.targetMinutes * 60;
         if (targetReached && !m.isDone) {
-          // 수련 목표 시간을 막 채운 순간 → 선물 상자 대기열에 추가
+          // 수련 목표 시간을 막 채운 순간 → EXP 지급 + 선물 상자 대기열에 추가, 5분 휴식 시작
+          expGain += m.expValue || 5;
           queueGift("수련 목표 클리어 선물", profileRef.current.trainingReward);
         }
         return {
           ...m,
           elapsedSeconds: elapsed,
-          running: targetReached ? false : m.running,
+          onBreak: targetReached ? true : m.onBreak,
+          breakElapsedSeconds: targetReached ? 0 : m.breakElapsedSeconds,
           isDone: targetReached ? true : m.isDone,
         };
       });
       setMissions(next);
       if (expGain > 0) {
-        setProfile((p) => ({ ...p, exp: p.exp + expGain }));
+        setProfile((p) => gainProgress(p, expGain));
+      }
+      if (breakJustFinished) {
+        setComfortMsg("휴식 끝! 다시 집중해볼까요?");
       }
     }, 1000);
     return () => clearInterval(timer);
@@ -949,10 +1587,13 @@ export default function Home() {
       content: newContent.trim(),
       type: newType,
       isDone: false,
-      expValue: newType === "dungeon" ? 30 : newType === "battle" ? 10 : 10,
-      targetMinutes: newType === "hunt" ? Number(newTargetMinutes) || 0 : null,
+      expValue:
+        newType === "dungeon" ? 30 : newType === "battle" ? 10 : newType === "hunt" ? 5 : 10,
+      targetMinutes: newType === "hunt" ? 25 : null,
       elapsedSeconds: 0,
       running: false,
+      onBreak: false,
+      breakElapsedSeconds: 0,
       expClaimed: false,
       priority: newPriority,
     };
@@ -1000,10 +1641,17 @@ export default function Home() {
       )
     );
     if (mission.expClaimed) {
-      setProfile((p) => ({
-        ...p,
-        exp: Math.max(0, p.exp - mission.expValue),
-      }));
+      setProfile((p) =>
+        p.door
+          ? {
+              ...p,
+              door: {
+                ...p.door,
+                hp: Math.min(p.door.maxHp, p.door.hp + DOOR_DAMAGE_PER_HIT),
+              },
+            }
+          : { ...p, exp: Math.max(0, p.exp - mission.expValue) }
+      );
     }
     if (rewardPopup?.id === id) setRewardPopup(null);
   }
@@ -1012,7 +1660,7 @@ export default function Home() {
     if (!rewardPopup) return;
     const { id, exp } = rewardPopup;
     const mission = missions.find((m) => m.id === id);
-    setProfile((p) => ({ ...p, exp: p.exp + exp }));
+    setProfile((p) => gainProgress(p, exp));
     setMissions((prev) =>
       prev.map((m) => (m.id === id ? { ...m, expClaimed: true } : m))
     );
@@ -1034,6 +1682,39 @@ export default function Home() {
       prev.map((m) => (m.id === id ? { ...m, running: !m.running } : m))
     );
   }
+
+  function startHuntFocus(id) {
+    setMissions((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, running: true } : m))
+    );
+    setFocusHuntId(id);
+  }
+
+  // 집중모드가 열려있는 동안: 화면이 꺼지지 않게 Wake Lock을 걸고,
+  // 다른 탭/앱으로 이탈했다가 돌아오면 알 수 있도록 감지한다.
+  // (웹 특성상 다른 앱으로 전환하는 것 자체를 막을 방법은 없다 — 감지와 화면 유지가 할 수 있는 최선)
+  useEffect(() => {
+    if (!focusHuntId) return;
+    setTabAway(false);
+    let wakeLock = null;
+    (async () => {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLock = await navigator.wakeLock.request("screen");
+        }
+      } catch (e) {
+        // Wake Lock 미지원/거부 시 조용히 무시
+      }
+    })();
+    const handleVisibility = () => {
+      if (document.hidden) setTabAway(true);
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      if (wakeLock) wakeLock.release().catch(() => {});
+    };
+  }, [focusHuntId]);
 
   function toggleHuntDone(id) {
     const mission = missions.find((m) => m.id === id);
@@ -1186,32 +1867,18 @@ export default function Home() {
   const progressPercent = Math.min(100, (expIntoLevel / EXP_PER_LEVEL) * 100);
   const stage = getStage(level);
   const hasSurpriseToday = missions.some((m) => m.type === "surprise");
-  // 레벨이 오를수록 배경 서명이 점점 또렷해지다가, 완성(LV90+)에서 완전히 선명해진다
+  // 레벨이 오를수록 서명이 점점 또렷해지다가, 완성(LV90+)에서 완전히 선명해진다.
+  // 처음부터 아예 안 보이면 의미가 없으니, LV1부터도 반투명하게는 보이도록 시작값을 높게 잡는다.
   const signatureOpacity =
-    level >= 90 ? 1 : Math.min(0.85, 0.08 + (level - 1) * 0.01);
+    level >= 90 ? 1 : Math.min(0.9, 0.35 + (level - 1) * 0.01);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <FuturisticBackdrop />
 
-      {/* 목표 직업 서명 워터마크 (배경, 네온 홀로그램) */}
-      <div className="pointer-events-none fixed inset-0 flex items-center justify-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={profile.jobSignature}
-          alt="내가 직접 적은 목표 직업 서명"
-          className="w-4/5 max-w-sm transition-opacity duration-700"
-          style={{
-            opacity: signatureOpacity,
-            filter: "drop-shadow(0 0 25px rgba(34,211,238,0.6))",
-          }}
-        />
-      </div>
-
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col gap-4 px-3 py-5">
         {/* 헤더 */}
         <header className="relative flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 shadow-[0_0_20px_rgba(34,211,238,0.12)] backdrop-blur-2xl">
-          <HudCorners />
           <h1 className="font-display text-base tracking-[0.1em] text-cyan-100 [text-shadow:0_0_10px_rgba(34,211,238,0.6)]">
             {SERVICE_NAME}
           </h1>
@@ -1228,12 +1895,26 @@ export default function Home() {
         )}
 
         {/* 캐릭터 상태창 (HUD) */}
-        <section className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-2xl">
-          <HudCorners />
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-cyan-400/60 bg-slate-950/80 text-3xl shadow-[0_0_18px_rgba(34,211,238,0.5)]">
-              <span className="absolute -inset-1.5 rounded-full border border-dashed border-cyan-400/40 [animation:spin_6s_linear_infinite]" />
-              <StageVisual stage={stage} className="h-11 w-11" />
+        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-2xl">
+          {/* 목표 직업 서명 워터마크 — 이 카드 안에서 반투명하게, 레벨이 오를수록 점점 또렷해짐 */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={profile.jobSignature}
+            alt="내가 직접 적은 목표 직업 서명"
+            className="pointer-events-none absolute inset-0 h-full w-full object-contain transition-opacity duration-700"
+            style={{
+              opacity: signatureOpacity,
+              filter: "drop-shadow(0 0 12px rgba(34,211,238,0.6))",
+            }}
+          />
+          <div className="relative flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowCharacterZoom(true)}
+              aria-label="캐릭터 크게 보기"
+              className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-cyan-400/60 bg-slate-950/80 text-3xl shadow-[0_0_18px_rgba(34,211,238,0.5)] transition hover:border-cyan-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.7)]"
+            >
+              <StageVisual stage={stage} level={level} door={!!profile.door} className="h-11 w-11" />
               <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-cyan-300/60 bg-gradient-to-r from-cyan-500 to-violet-600 px-2 py-0.5 font-display text-[11px] text-white shadow-[0_0_10px_rgba(34,211,238,0.6)]">
                 LV{level}
               </span>
@@ -1242,27 +1923,47 @@ export default function Home() {
                   {levelUpMsg}
                 </div>
               )}
-            </div>
+            </button>
             <div className="flex-1">
               <p className="font-display text-sm tracking-wide text-cyan-50">
                 LV.{level} {stage.label}
               </p>
-              <div className="relative mt-1.5 h-3.5 w-full overflow-hidden rounded-md border border-cyan-400/30 bg-slate-950/80 shadow-inner">
-                <div
-                  className="relative h-full bg-gradient-to-r from-cyan-400 to-violet-500 shadow-[0_0_10px_rgba(34,211,238,0.7)] transition-all"
-                  style={{ width: `${progressPercent}%` }}
-                >
-                  <div className="absolute inset-x-0 top-0 h-1/2 bg-white/30" />
-                </div>
-                <GaugeSegments />
-              </div>
-              <p className="mt-0.5 text-right font-display text-[11px] tracking-wide text-cyan-300/80">
-                누적 EXP {profile.exp} (다음 LV까지 {expIntoLevel}/{EXP_PER_LEVEL})
-              </p>
+              {profile.door ? (
+                <>
+                  <div className="mt-1.5 h-3.5 w-full overflow-hidden rounded-full border border-rose-400/40 bg-slate-950/80 shadow-inner">
+                    <div
+                      className="relative h-full rounded-full bg-gradient-to-r from-rose-500 to-orange-500 shadow-[0_0_10px_rgba(244,63,94,0.7)] transition-all"
+                      style={{
+                        width: `${(profile.door.hp / profile.door.maxHp) * 100}%`,
+                      }}
+                    >
+                      <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-white/30" />
+                    </div>
+                  </div>
+                  <p className="mt-0.5 text-right font-display text-[11px] tracking-wide text-rose-300/80">
+                    🚪 {profile.door.company} 문 체력 {profile.door.hp}/
+                    {profile.door.maxHp}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="mt-1.5 h-3.5 w-full overflow-hidden rounded-full border border-cyan-400/30 bg-slate-950/80 shadow-inner">
+                    <div
+                      className="relative h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 shadow-[0_0_10px_rgba(34,211,238,0.7)] transition-all"
+                      style={{ width: `${progressPercent}%` }}
+                    >
+                      <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-white/30" />
+                    </div>
+                  </div>
+                  <p className="mt-0.5 text-right font-display text-[11px] tracking-wide text-cyan-300/80">
+                    누적 EXP {profile.exp} (다음 LV까지 {expIntoLevel}/{EXP_PER_LEVEL})
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-end">
+          <div className="relative mt-3 flex items-center justify-end">
             <button
               onClick={() => setShowSettings(true)}
               className="shrink-0 rounded-full border border-white/15 bg-white/5 backdrop-blur-md px-2.5 py-1.5 text-[11px] font-semibold text-slate-300"
@@ -1305,7 +2006,6 @@ export default function Home() {
           </h2>
 
           <div className="relative mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] backdrop-blur-2xl">
-            <HudCorners />
             <div className="flex flex-col gap-2">
               <input
                 value={newContent}
@@ -1326,16 +2026,9 @@ export default function Home() {
                   <option value="battle">격투 신청 (입사지원/대외활동/공모전 신청)</option>
                 </select>
                 {newType === "hunt" && (
-                  <input
-                    type="number"
-                    min={1}
-                    value={newTargetMinutes}
-                    onChange={(e) => setNewTargetMinutes(e.target.value)}
-                    className="w-20 rounded-xl border border-white/10 bg-black/25 px-2 py-2 text-sm text-cyan-50"
-                  />
-                )}
-                {newType === "hunt" && (
-                  <span className="text-xs text-cyan-300/70">분 목표</span>
+                  <span className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs whitespace-nowrap text-cyan-300/80">
+                    🍅 25분 목표 고정
+                  </span>
                 )}
               </div>
               <select
@@ -1359,7 +2052,6 @@ export default function Home() {
           </div>
 
           <div className="relative mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] backdrop-blur-2xl">
-            <HudCorners />
             <button
               onClick={requestSuggestion}
               disabled={suggestLoading}
@@ -1467,16 +2159,22 @@ export default function Home() {
                       </span>
                     )}
                     {m.type === "hunt" ? (
-                      <p className="text-xs text-slate-400">
-                        {formatClock(m.elapsedSeconds)}
-                        {m.targetMinutes
-                          ? ` / 목표 ${m.targetMinutes}분`
-                          : ""}{" "}
-                        ·{" "}
-                        <span className="font-display text-fuchsia-300">
-                          20분당 +5 EXP
-                        </span>
-                      </p>
+                      m.onBreak ? (
+                        <p className="text-xs text-slate-400">
+                          ☕ 휴식 중 {formatClock(m.breakElapsedSeconds)} / 5분
+                        </p>
+                      ) : (
+                        <p className="text-xs text-slate-400">
+                          {formatClock(m.elapsedSeconds)}
+                          {m.targetMinutes
+                            ? ` / 목표 ${m.targetMinutes}분`
+                            : ""}{" "}
+                          ·{" "}
+                          <span className="font-display text-fuchsia-300">
+                            {m.targetMinutes}분 채우면 +{m.expValue} EXP
+                          </span>
+                        </p>
+                      )
                     ) : (
                       <span
                         className={`inline-block rounded-full border px-2 py-0.5 font-display text-[11px] tracking-wide ${meta.badge}`}
@@ -1489,16 +2187,21 @@ export default function Home() {
 
                 {m.type === "hunt" && (
                   <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      onClick={() => toggleHuntRunning(m.id)}
-                      className={`rounded-lg border px-3 py-1 text-xs font-bold text-white ${
-                        m.running
-                          ? "border-rose-400/60 bg-rose-500/90 shadow-[0_0_10px_rgba(244,63,94,0.5)]"
-                          : "border-cyan-300/50 bg-gradient-to-r from-cyan-500 to-violet-600 shadow-[0_0_10px_rgba(34,211,238,0.4)]"
-                      }`}
-                    >
-                      {m.running ? "정지" : "수련 시작"}
-                    </button>
+                    {m.running ? (
+                      <button
+                        onClick={() => setFocusHuntId(m.id)}
+                        className="rounded-lg border border-cyan-300/50 bg-gradient-to-r from-cyan-500 to-violet-600 px-3 py-1 text-xs font-bold text-white shadow-[0_0_10px_rgba(34,211,238,0.4)]"
+                      >
+                        🔒 집중모드
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => startHuntFocus(m.id)}
+                        className="rounded-lg border border-cyan-300/50 bg-gradient-to-r from-cyan-500 to-violet-600 px-3 py-1 text-xs font-bold text-white shadow-[0_0_10px_rgba(34,211,238,0.4)]"
+                      >
+                        수련 시작
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleHuntDone(m.id)}
                       className={`rounded-lg border px-2 py-1 text-xs font-bold ${
@@ -1547,11 +2250,12 @@ export default function Home() {
               monthDate={calendarMonth}
               onChangeMonth={changeCalendarMonth}
               deadlines={deadlines}
+              selectedDate={newDeadlineDate}
+              onSelectDate={setNewDeadlineDate}
             />
           </div>
 
           <div className="relative mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] backdrop-blur-2xl">
-            <HudCorners />
             <div className="flex flex-col gap-2">
               <input
                 value={newDeadlineTitle}
@@ -1638,11 +2342,130 @@ export default function Home() {
         </p>
       </div>
 
+      {/* 수련 집중 모드: 뽀모도로처럼 화면을 꽉 채운 큰 타이머로 몰입시킴.
+          웹 특성상 다른 앱/탭 전환 자체를 막을 수는 없어서, 화면이 꺼지지 않게(Wake Lock)
+          하고 다른 화면으로 이탈했다 돌아오면 알려주는 것까지가 할 수 있는 최선이다. */}
+      {focusHuntId && (() => {
+        const m = missions.find((x) => x.id === focusHuntId);
+        if (!m) return null;
+
+        if (m.onBreak) {
+          const breakRemain = Math.max(0, 300 - m.breakElapsedSeconds);
+          const breakProgress = Math.min(
+            100,
+            (m.breakElapsedSeconds / 300) * 100
+          );
+          return (
+            <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-6 bg-black/95 p-6 text-center">
+              <p className="font-display text-xs tracking-[0.2em] text-amber-400/70">
+                ☕ 휴식 시간
+              </p>
+              <p className="max-w-xs font-display text-base text-amber-50">
+                {m.content}
+              </p>
+              <p className="font-display text-6xl tabular-nums text-amber-100 [text-shadow:0_0_25px_rgba(251,191,36,0.6)]">
+                {formatClock(breakRemain)}
+              </p>
+              <div className="w-full max-w-xs">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all"
+                    style={{ width: `${breakProgress}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-slate-400">
+                  25분 완료! 5분 쉬고 다시 시작해요
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => toggleHuntRunning(m.id)}
+                  className={`rounded-xl border px-4 py-2.5 font-display text-sm font-bold text-white ${
+                    m.running
+                      ? "border-rose-400/60 bg-rose-500/90"
+                      : "border-amber-300/50 bg-gradient-to-r from-amber-400 to-orange-500"
+                  }`}
+                >
+                  {m.running ? "휴식 일시정지" : "휴식 계속하기"}
+                </button>
+                <button
+                  onClick={() => setFocusHuntId(null)}
+                  className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300"
+                >
+                  집중모드 나가기
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        const targetSeconds = (m.targetMinutes || 0) * 60;
+        const remain = targetSeconds
+          ? Math.max(0, targetSeconds - m.elapsedSeconds)
+          : null;
+        const progress = targetSeconds
+          ? Math.min(100, (m.elapsedSeconds / targetSeconds) * 100)
+          : 0;
+        return (
+          <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-6 bg-black/95 p-6 text-center">
+            <p className="font-display text-xs tracking-[0.2em] text-cyan-400/70">
+              🔒 집중 모드
+            </p>
+            <p className="max-w-xs font-display text-base text-cyan-50">
+              {m.content}
+            </p>
+            <p className="font-display text-6xl tabular-nums text-cyan-100 [text-shadow:0_0_25px_rgba(34,211,238,0.6)]">
+              {formatClock(m.elapsedSeconds)}
+            </p>
+            {targetSeconds > 0 && (
+              <div className="w-full max-w-xs">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 transition-all"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-slate-400">
+                  목표 {m.targetMinutes}분 · 남은 시간 {formatClock(remain)} ·
+                  다 채우면 5분 휴식이 이어져요
+                </p>
+              </div>
+            )}
+            {tabAway && (
+              <p className="animate-pulse rounded-full border border-rose-400/50 bg-rose-500/10 px-3 py-1 text-xs text-rose-300">
+                ⚠️ 방금 다른 화면으로 이탈했었어요 — 집중!
+              </p>
+            )}
+            <p className="max-w-xs text-[11px] text-slate-500">
+              웹 특성상 다른 앱 전환 자체를 막을 순 없지만, 이 화면을 켜두면 화면이
+              꺼지지 않고 이탈 시 알려드려요.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleHuntRunning(m.id)}
+                className={`rounded-xl border px-4 py-2.5 font-display text-sm font-bold text-white ${
+                  m.running
+                    ? "border-rose-400/60 bg-rose-500/90"
+                    : "border-cyan-300/50 bg-gradient-to-r from-cyan-500 to-violet-600"
+                }`}
+              >
+                {m.running ? "일시정지" : "다시 시작"}
+              </button>
+              <button
+                onClick={() => setFocusHuntId(null)}
+                className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300"
+              >
+                집중모드 나가기
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* 미션 완료 보상 알림창 */}
       {rewardPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="animate-pop-in relative w-full max-w-xs rounded-2xl border border-cyan-300/50 bg-slate-900/70 p-6 backdrop-blur-2xl text-center shadow-[0_0_40px_rgba(34,211,238,0.4)]">
-            <HudCorners />
             <p className="font-display text-base tracking-wide text-cyan-100">
               🎉 미션 완료!
             </p>
@@ -1669,14 +2492,13 @@ export default function Home() {
         >
           <div className="flex flex-col items-center">
             <div className="animate-pop-in relative mb-1 max-w-[85vw] rounded-2xl border border-rose-300/60 bg-rose-50 px-6 py-3 text-center font-display text-xl text-rose-600 shadow-lg">
-              <HudCorners variant="sm" tone="rose" />
               {comfortMsg}
               {/* 말풍선 꼬리: 알 캐릭터 쪽(아래)을 향하도록 */}
               <span className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-[11px] border-t-[16px] border-x-transparent border-t-rose-300/60" />
               <span className="absolute left-1/2 top-full -mt-px h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[13px] border-x-transparent border-t-rose-50" />
             </div>
             <div className="animate-shake mt-3 drop-shadow-[0_0_40px_rgba(244,63,94,0.55)]">
-              <StageVisual stage={stage} className="h-40 w-40 text-[7rem] leading-none" />
+              <StageVisual stage={stage} level={level} door={!!profile.door} className="h-40 w-40 text-[7rem] leading-none" />
             </div>
           </div>
           <p className="text-xs text-slate-400">탭하면 닫혀요</p>
@@ -1687,7 +2509,6 @@ export default function Home() {
       {giftQueue[0] && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
           <div className="animate-pop-in relative w-full max-w-xs rounded-2xl border border-amber-300/50 bg-slate-900/70 p-6 backdrop-blur-2xl text-center shadow-[0_0_40px_rgba(251,191,36,0.4)]">
-            <HudCorners tone="amber" />
             {!giftQueue[0].opened ? (
               <>
                 <p className="font-display text-base tracking-wide text-amber-100">
@@ -1733,7 +2554,6 @@ export default function Home() {
       {feedbackTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="animate-pop-in relative w-full max-w-sm rounded-2xl border border-cyan-300/50 bg-slate-900/80 p-5 shadow-[0_0_30px_rgba(34,211,238,0.3)] backdrop-blur-2xl">
-            <HudCorners />
             <h3 className="font-display text-base tracking-wide text-cyan-100">
               🤖 AI 피드백
             </h3>
@@ -1776,7 +2596,6 @@ export default function Home() {
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="animate-pop-in relative w-full max-w-sm rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(34,211,238,0.2)] backdrop-blur-2xl">
-            <HudCorners />
             <h3 className="font-display text-base tracking-wide text-cyan-100">
               ⚙️ 설정
             </h3>
@@ -1859,7 +2678,7 @@ export default function Home() {
 
             <div className="mt-5 flex gap-2">
               <button
-                onClick={resignJob}
+                onClick={() => setShowResignConfirm(true)}
                 className="flex-1 rounded-xl border border-white/15 bg-white/5 backdrop-blur-md px-3 py-2 text-xs font-semibold text-slate-300"
               >
                 ✍️ 목표 직업 다시 서명
@@ -1872,6 +2691,179 @@ export default function Home() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 목표 재서명 확인: EXP가 초기화된다는 걸 미리 알리고 되돌릴 수 없는 선택이니 한 번 더 확인받는다 */}
+      {showResignConfirm && (
+        <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/70 p-4">
+          <div className="animate-pop-in w-full max-w-xs rounded-2xl border border-rose-400/50 bg-slate-900/80 p-6 text-center backdrop-blur-2xl shadow-[0_0_30px_rgba(244,63,94,0.3)]">
+            <p className="font-display text-base tracking-wide text-rose-200">
+              ⚠️ 목표 다시 서명
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              지금까지 쌓은 EXP({profile.exp})가 0으로 초기화되고,
+              <br />
+              목표를 처음부터 다시 시작하게 돼요.
+              <br />
+              괜찮으시겠습니까?
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={() => setShowResignConfirm(false)}
+                className="flex-1 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  setShowResignConfirm(false);
+                  setShowSettings(false);
+                  resignJob();
+                }}
+                className="flex-1 rounded-xl border border-rose-400/60 bg-rose-500/90 px-3 py-2 font-display text-xs tracking-wide text-white shadow-[0_0_18px_rgba(244,63,94,0.4)]"
+              >
+                네, 다시 서명할게요
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 캐릭터 크게 보기: HUD의 작은 아바타를 눌렀을 때 지금 단계 캐릭터를 크게 보여줌 */}
+      {showCharacterZoom && (
+        <div
+          onClick={() => setShowCharacterZoom(false)}
+          role="button"
+          aria-label="닫기"
+          className="fixed inset-0 z-[65] flex cursor-pointer flex-col items-center justify-center gap-4 bg-black/80 p-4"
+        >
+          <div className="rounded-3xl border-2 border-cyan-400/60 bg-slate-950/80 p-6 shadow-[0_0_40px_rgba(34,211,238,0.4)]">
+            <StageVisual stage={stage} level={level} door={!!profile.door} className="h-56 w-56" />
+          </div>
+          <p className="font-display text-base tracking-wide text-cyan-100">
+            LV.{level} {stage.label}
+          </p>
+          <p className="text-xs text-slate-400">탭하면 닫혀요</p>
+        </div>
+      )}
+
+      {/* 부화 축하: LV9(알)에서 LV10(런닝+사각팬티 캐릭터)로 넘어가는 순간만 특별히 보여주는 연출 */}
+      {showHatchCelebration && (
+        <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center gap-6 bg-black/95 p-6 text-center">
+          <p className="font-display text-sm tracking-[0.3em] text-amber-300/80">
+            🎉🎊 축하합니다 🎊🎉
+          </p>
+          <div className="relative flex h-48 w-48 items-center justify-center">
+            <span className="animate-hatch-glow absolute inset-0 rounded-full bg-amber-400/30 blur-2xl" />
+            <div className="animate-pop-in relative">
+              <PersonUndiesIcon className="h-40 w-40 drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]" />
+            </div>
+            {/* 사방으로 튀는 알 껍질 조각들 */}
+            <span
+              className="animate-shard absolute left-1/2 top-1/2 text-xl"
+              style={{ "--shard-x": "70px", "--shard-y": "-60px" }}
+            >
+              🥚
+            </span>
+            <span
+              className="animate-shard absolute left-1/2 top-1/2 text-lg"
+              style={{ "--shard-x": "-75px", "--shard-y": "-45px" }}
+            >
+              🥚
+            </span>
+            <span
+              className="animate-shard absolute left-1/2 top-1/2 text-lg"
+              style={{ "--shard-x": "60px", "--shard-y": "55px" }}
+            >
+              🥚
+            </span>
+            <span
+              className="animate-shard absolute left-1/2 top-1/2 text-xl"
+              style={{ "--shard-x": "-65px", "--shard-y": "60px" }}
+            >
+              🥚
+            </span>
+          </div>
+          <p className="max-w-xs font-display text-lg text-amber-100">
+            LV.10 부화!
+          </p>
+          <blockquote className="max-w-xs rounded-2xl border border-amber-300/40 bg-amber-500/5 p-4 text-sm leading-relaxed text-amber-50/90 italic">
+            "새는 알에서 나오기 위해 싸운다.
+            <br />
+            알은 세계다.
+            <br />
+            태어나고자 하는 자는 반드시 하나의 세계를 깨뜨려야 한다."
+          </blockquote>
+          <button
+            onClick={() => setShowHatchCelebration(false)}
+            className="rounded-xl border border-amber-300/50 bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-2.5 font-display text-sm font-bold text-white shadow-[0_0_20px_rgba(251,191,36,0.4)]"
+          >
+            계속하기
+          </button>
+        </div>
+      )}
+
+      {/* 만렙(LV90) 도달 후 문 등장: 도전할 회사명을 입력받는다 */}
+      {showDoorSetup && (
+        <div className="fixed inset-0 z-[85] flex flex-col items-center justify-center gap-6 bg-black/95 p-6 text-center">
+          <p className="font-display text-sm tracking-[0.3em] text-rose-300/80">
+            🚪 문이 나타났다
+          </p>
+          <div className="relative flex h-40 w-40 items-center justify-center">
+            <span className="animate-hatch-glow absolute inset-0 rounded-full bg-rose-500/25 blur-2xl" />
+            <span className="animate-pop-in relative text-8xl drop-shadow-[0_0_30px_rgba(244,63,94,0.6)]">
+              🚪
+            </span>
+          </div>
+          <p className="max-w-xs font-display text-lg text-rose-100">
+            도전할 회사를 입력하세요
+          </p>
+          <p className="max-w-xs text-sm leading-relaxed text-slate-300">
+            지금부터는 EXP 대신, 미션을 완료할 때마다 이 문에 데미지를 줘요.
+            <br />문 체력({DOOR_MAX_HP})을 전부 깎으면 문이 부서집니다.
+          </p>
+          <input
+            type="text"
+            value={doorCompanyInput}
+            onChange={(e) => setDoorCompanyInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") startDoorChallenge();
+            }}
+            placeholder="예: 카카오"
+            className="w-full max-w-xs rounded-xl border border-rose-400/40 bg-slate-900/80 px-4 py-2.5 text-center text-sm text-rose-50 placeholder:text-slate-500 focus:border-rose-300 focus:outline-none"
+          />
+          <button
+            onClick={startDoorChallenge}
+            disabled={!doorCompanyInput.trim()}
+            className="rounded-xl border border-rose-300/50 bg-gradient-to-r from-rose-500 to-orange-500 px-6 py-2.5 font-display text-sm font-bold text-white shadow-[0_0_20px_rgba(244,63,94,0.4)] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            도전 시작
+          </button>
+        </div>
+      )}
+
+      {/* 문을 다 부쉈을 때: 축하 연출 */}
+      {showDoorBreak && (
+        <div className="fixed inset-0 z-[85] flex flex-col items-center justify-center gap-6 bg-black/95 p-6 text-center">
+          <p className="font-display text-sm tracking-[0.3em] text-amber-300/80">
+            🎉🎊 축하합니다 🎊🎉
+          </p>
+          <div className="relative flex h-40 w-40 items-center justify-center">
+            <span className="animate-hatch-glow absolute inset-0 rounded-full bg-amber-400/30 blur-2xl" />
+            <span className="animate-pop-in relative text-8xl drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]">
+              💥
+            </span>
+          </div>
+          <p className="max-w-xs font-display text-lg text-amber-100">
+            {doorBrokenCompany} 문을 부쉈어요!
+          </p>
+          <button
+            onClick={() => setShowDoorBreak(false)}
+            className="rounded-xl border border-amber-300/50 bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-2.5 font-display text-sm font-bold text-white shadow-[0_0_20px_rgba(251,191,36,0.4)]"
+          >
+            다음 문으로
+          </button>
         </div>
       )}
     </div>
