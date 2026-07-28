@@ -786,6 +786,51 @@ function PersonDoorThrustIcon({ className }) {
   );
 }
 
+// 문 챌린지 클리어(최종 합격) 축하 연출: 갑옷을 벗고 관복을 입은 채 벼슬을 받는 모습
+function PersonGwanbokIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 신발 (관복 아래로 살짝 보이는 검은 신) */}
+      <ellipse cx="41" cy="114" rx="7" ry="4" fill="#1c1917" />
+      <ellipse cx="59" cy="114" rx="7" ry="4" fill="#1c1917" />
+
+      {/* 관복 (넓게 퍼지는 긴 예복) */}
+      <path d="M36 46 L64 46 L74 112 L26 112 Z" fill="#1e3a8a" />
+      <path d="M36 46 L64 46 L68 66 L32 66 Z" fill="#1d4ed8" opacity="0.5" />
+
+      {/* 소매 (넓은 양팔 소매, 앞에서 손을 모은 자세) */}
+      <path d="M37 50 L18 62 L25 82 L42 76 Z" fill="#1e3a8a" />
+      <path d="M63 50 L82 62 L75 82 L58 76 Z" fill="#1e3a8a" />
+      <circle cx="42" cy="80" r="4.2" fill="#f4c199" />
+      <circle cx="58" cy="80" r="4.2" fill="#f4c199" />
+      {/* 홀 (양손으로 맞잡은 예식용 판) */}
+      <rect x="46" y="70" width="8" height="20" rx="2" fill="#e2b76b" />
+
+      {/* 허리띠 */}
+      <rect x="30" y="70" width="40" height="6" rx="2" fill="#facc15" />
+      {/* 흉배 (관직을 나타내는 가슴 장식) */}
+      <rect x="44" y="52" width="12" height="12" rx="2" fill="#dc2626" stroke="#facc15" strokeWidth="1.2" />
+
+      {/* 머리 */}
+      <circle cx="50" cy="26" r="13" fill="#f4c199" />
+      <circle cx="45" cy="25" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="25" r="1.6" fill="#1c1917" />
+      <path
+        d="M45 31 Q50 34 55 31"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+
+      {/* 사모 (검은 관모, 양옆으로 날개 모양) */}
+      <rect x="18" y="15" width="15" height="4.5" rx="2" fill="#1c1917" />
+      <rect x="67" y="15" width="15" height="4.5" rx="2" fill="#1c1917" />
+      <path d="M36 18 Q36 4 50 4 Q64 4 64 18 Q64 22 50 22 Q36 22 36 18 Z" fill="#1c1917" />
+    </svg>
+  );
+}
+
 const STAGE_VISUALS = {
   eggCracked: EggCrackedIcon,
   personUndies: PersonUndiesIcon,
@@ -1283,7 +1328,6 @@ export default function Home() {
   const [showDoorSetup, setShowDoorSetup] = useState(false);
   const [doorCompanyInput, setDoorCompanyInput] = useState("");
   const [showDoorBreak, setShowDoorBreak] = useState(false);
-  const [doorBrokenCompany, setDoorBrokenCompany] = useState("");
   const prevDoorRef = useRef(null);
 
   // 수련(hunt) 집중 모드: 큰 타이머로 화면을 꽉 채워 몰입시키는 뽀모도로 스타일 팝업
@@ -1393,6 +1437,11 @@ export default function Home() {
 
   // 만렙(LV90) 이후 문이 떠 있는 동안은 EXP가 늘어나는 대신, 미션 종류·EXP값과 무관하게
   // 완료 1회당 문 체력을 1씩 깎는다. 문이 없으면 지금까지처럼 EXP를 그대로 더한다.
+  // 미션 카드에 보여줄 보상 표기: 문 챌린지 중이면 EXP 대신 고정 데미지(HIT)로 표시한다
+  function rewardLabel(expValue) {
+    return profile.door ? `HIT ${DOOR_DAMAGE_PER_HIT}` : `+${expValue} EXP`;
+  }
+
   function gainProgress(prevProfile, expAmount) {
     if (prevProfile.door) {
       return {
@@ -1415,7 +1464,6 @@ export default function Home() {
       prevDoorRef.current &&
       prevDoorRef.current.hp > 0
     ) {
-      setDoorBrokenCompany(profile.door.company);
       setShowDoorBreak(true);
       setProfile((p) => ({ ...p, door: null }));
     }
@@ -1896,17 +1944,6 @@ export default function Home() {
 
         {/* 캐릭터 상태창 (HUD) */}
         <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-2xl">
-          {/* 목표 직업 서명 워터마크 — 이 카드 안에서 반투명하게, 레벨이 오를수록 점점 또렷해짐 */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={profile.jobSignature}
-            alt="내가 직접 적은 목표 직업 서명"
-            className="pointer-events-none absolute inset-0 h-full w-full object-contain transition-opacity duration-700"
-            style={{
-              opacity: signatureOpacity,
-              filter: "drop-shadow(0 0 12px rgba(34,211,238,0.6))",
-            }}
-          />
           <div className="relative flex items-center gap-3">
             <button
               type="button"
@@ -1963,7 +2000,20 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative mt-3 flex items-center justify-end">
+          {/* 목표 직업 서명 — 박스 없이 서명 자체만, 목표설정 버튼과 한 줄에 표시, 레벨이 오를수록 점점 또렷해짐 */}
+          <div className="relative mt-2 flex items-center gap-2">
+            <div className="relative h-12 flex-1 overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={profile.jobSignature}
+                alt="내가 직접 적은 목표 직업 서명"
+                className="pointer-events-none absolute inset-0 h-full w-full object-contain transition-opacity duration-700"
+                style={{
+                  opacity: signatureOpacity,
+                  filter: "drop-shadow(0 0 10px rgba(34,211,238,0.6))",
+                }}
+              />
+            </div>
             <button
               onClick={() => setShowSettings(true)}
               className="shrink-0 rounded-full border border-white/15 bg-white/5 backdrop-blur-md px-2.5 py-1.5 text-[11px] font-semibold text-slate-300"
@@ -2088,7 +2138,7 @@ export default function Home() {
           >
             {hasSurpriseToday
               ? "🎲 오늘의 돌발미션은 이미 뽑았어요"
-              : "🎲 돌발미션 뽑기 (+15 EXP)"}
+              : `🎲 돌발미션 뽑기 (${rewardLabel(15)})`}
           </button>
 
           <div className="flex flex-col gap-2 pb-4">
@@ -2171,7 +2221,7 @@ export default function Home() {
                             : ""}{" "}
                           ·{" "}
                           <span className="font-display text-fuchsia-300">
-                            {m.targetMinutes}분 채우면 +{m.expValue} EXP
+                            {m.targetMinutes}분 채우면 {rewardLabel(m.expValue)}
                           </span>
                         </p>
                       )
@@ -2179,7 +2229,7 @@ export default function Home() {
                       <span
                         className={`inline-block rounded-full border px-2 py-0.5 font-display text-[11px] tracking-wide ${meta.badge}`}
                       >
-                        +{m.expValue} EXP
+                        {rewardLabel(m.expValue)}
                       </span>
                     )}
                   </div>
@@ -2465,16 +2515,36 @@ export default function Home() {
       {/* 미션 완료 보상 알림창 */}
       {rewardPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="animate-pop-in relative w-full max-w-xs rounded-2xl border border-cyan-300/50 bg-slate-900/70 p-6 backdrop-blur-2xl text-center shadow-[0_0_40px_rgba(34,211,238,0.4)]">
-            <p className="font-display text-base tracking-wide text-cyan-100">
-              🎉 미션 완료!
+          <div
+            className={`animate-pop-in relative w-full max-w-xs rounded-2xl border p-6 backdrop-blur-2xl text-center ${
+              profile.door
+                ? "border-rose-300/50 bg-slate-900/70 shadow-[0_0_40px_rgba(244,63,94,0.4)]"
+                : "border-cyan-300/50 bg-slate-900/70 shadow-[0_0_40px_rgba(34,211,238,0.4)]"
+            }`}
+          >
+            <p
+              className={`font-display text-base tracking-wide ${
+                profile.door ? "text-rose-100" : "text-cyan-100"
+              }`}
+            >
+              {profile.door ? "⚔️ 명중!" : "🎉 미션 완료!"}
             </p>
-            <p className="mt-3 bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text font-display text-3xl text-transparent">
-              +{rewardPopup.exp} EXP
+            <p
+              className={`mt-3 bg-clip-text font-display text-3xl text-transparent ${
+                profile.door
+                  ? "bg-gradient-to-r from-rose-500 to-orange-400"
+                  : "bg-gradient-to-r from-cyan-400 to-violet-400"
+              }`}
+            >
+              {rewardLabel(rewardPopup.exp)}
             </p>
             <button
               onClick={claimReward}
-              className="mt-5 w-full rounded-xl border border-cyan-300/50 bg-gradient-to-r from-cyan-500 to-violet-600 px-4 py-2.5 font-display text-sm tracking-wide text-white shadow-[0_0_18px_rgba(34,211,238,0.4)] transition"
+              className={`mt-5 w-full rounded-xl border px-4 py-2.5 font-display text-sm tracking-wide text-white transition ${
+                profile.door
+                  ? "border-rose-300/50 bg-gradient-to-r from-rose-500 to-orange-500 shadow-[0_0_18px_rgba(244,63,94,0.4)]"
+                  : "border-cyan-300/50 bg-gradient-to-r from-cyan-500 to-violet-600 shadow-[0_0_18px_rgba(34,211,238,0.4)]"
+              }`}
             >
               받기
             </button>
@@ -2789,11 +2859,11 @@ export default function Home() {
             LV.10 부화!
           </p>
           <blockquote className="max-w-xs rounded-2xl border border-amber-300/40 bg-amber-500/5 p-4 text-sm leading-relaxed text-amber-50/90 italic">
-            "새는 알에서 나오기 위해 싸운다.
+            &ldquo;새는 알에서 나오기 위해 싸운다.
             <br />
             알은 세계다.
             <br />
-            태어나고자 하는 자는 반드시 하나의 세계를 깨뜨려야 한다."
+            태어나고자 하는 자는 반드시 하나의 세계를 깨뜨려야 한다.&rdquo;
           </blockquote>
           <button
             onClick={() => setShowHatchCelebration(false)}
@@ -2820,7 +2890,8 @@ export default function Home() {
             도전할 회사를 입력하세요
           </p>
           <p className="max-w-xs text-sm leading-relaxed text-slate-300">
-            지금부터는 EXP 대신, 미션을 완료할 때마다 이 문에 데미지를 줘요.
+            지금부터는 EXP 대신, 미션을 완료할 때마다
+            <br />이 문에 데미지를 줘요.
             <br />문 체력({DOOR_MAX_HP})을 전부 깎으면 문이 부서집니다.
           </p>
           <input
@@ -2843,20 +2914,43 @@ export default function Home() {
         </div>
       )}
 
-      {/* 문을 다 부쉈을 때: 축하 연출 */}
+      {/* 문을 다 부쉈을 때: 팡파레 + "축 입사" 축하 연출 */}
       {showDoorBreak && (
         <div className="fixed inset-0 z-[85] flex flex-col items-center justify-center gap-6 bg-black/95 p-6 text-center">
           <p className="font-display text-sm tracking-[0.3em] text-amber-300/80">
             🎉🎊 축하합니다 🎊🎉
           </p>
-          <div className="relative flex h-40 w-40 items-center justify-center">
+          <p className="font-display text-4xl font-bold text-amber-200 [text-shadow:0_0_20px_rgba(251,191,36,0.7)]">
+            축 입사!
+          </p>
+          <p className="font-display text-lg text-amber-100">수고하셨습니다</p>
+          <div className="relative flex h-48 w-48 items-center justify-center">
             <span className="animate-hatch-glow absolute inset-0 rounded-full bg-amber-400/30 blur-2xl" />
-            <span className="animate-pop-in relative text-8xl drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]">
-              💥
-            </span>
+            <PersonGwanbokIcon className="animate-pop-in relative h-40 w-40 drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]" />
+            {/* 사방으로 터지는 팡파레 컨페티 */}
+            {[
+              { emoji: "🎉", x: "80px", y: "-70px", size: "text-2xl" },
+              { emoji: "✨", x: "-85px", y: "-55px", size: "text-xl" },
+              { emoji: "🎊", x: "70px", y: "65px", size: "text-2xl" },
+              { emoji: "⭐", x: "-75px", y: "70px", size: "text-lg" },
+              { emoji: "🥳", x: "0px", y: "-95px", size: "text-2xl" },
+              { emoji: "🎇", x: "95px", y: "0px", size: "text-xl" },
+              { emoji: "🎈", x: "-95px", y: "0px", size: "text-xl" },
+              { emoji: "✨", x: "0px", y: "95px", size: "text-lg" },
+            ].map((c, i) => (
+              <span
+                key={i}
+                className={`animate-shard absolute left-1/2 top-1/2 ${c.size}`}
+                style={{ "--shard-x": c.x, "--shard-y": c.y }}
+              >
+                {c.emoji}
+              </span>
+            ))}
           </div>
           <p className="max-w-xs font-display text-lg text-amber-100">
-            {doorBrokenCompany} 문을 부쉈어요!
+            앞으로도 당신의 눈부신 성장과
+            <br />
+            찬란한 미래를 응원합니다.
           </p>
           <button
             onClick={() => setShowDoorBreak(false)}
