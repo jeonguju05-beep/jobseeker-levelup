@@ -163,6 +163,74 @@ function PersonUndiesIcon({ className }) {
   );
 }
 
+// 부화 축하 연출 전용: 팔다리를 쭉 뻗은 X자 포즈 (팔은 위로 벌려 만세, 다리도 양옆으로 벌림)
+function PersonHatchPoseIcon({ className }) {
+  return (
+    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
+      {/* 다리 (양옆으로 벌린 자세) */}
+      <rect
+        x="40"
+        y="64"
+        width="9"
+        height="50"
+        rx="4"
+        fill="#f4c199"
+        transform="rotate(25 44.5 64)"
+      />
+      <rect
+        x="51"
+        y="64"
+        width="9"
+        height="50"
+        rx="4"
+        fill="#f4c199"
+        transform="rotate(-25 55.5 64)"
+      />
+      <ellipse cx="24" cy="108" rx="6.5" ry="3.5" fill="#f4c199" transform="rotate(25 24 108)" />
+      <ellipse cx="76" cy="108" rx="6.5" ry="3.5" fill="#f4c199" transform="rotate(-25 76 108)" />
+      {/* 사각팬티 */}
+      <rect x="38" y="57" width="24" height="24" rx="7" fill="#64748b" />
+      <rect x="38" y="70" width="24" height="3" fill="#475569" opacity="0.6" />
+      {/* 팔 (위로 쭉 뻗어 X자 만세 포즈) */}
+      <rect
+        x="29"
+        y="36"
+        width="9"
+        height="30"
+        rx="4"
+        fill="#f4c199"
+        transform="rotate(135 33.5 36)"
+      />
+      <rect
+        x="62"
+        y="36"
+        width="9"
+        height="30"
+        rx="4"
+        fill="#f4c199"
+        transform="rotate(-135 66.5 36)"
+      />
+      {/* 런닝 */}
+      <rect x="41" y="29" width="4" height="7" fill="#f8fafc" />
+      <rect x="55" y="29" width="4" height="7" fill="#f8fafc" />
+      <rect x="37" y="33" width="26" height="30" rx="8" fill="#f8fafc" />
+      {/* 머리 */}
+      <circle cx="50" cy="22" r="13" fill="#f4c199" />
+      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
+      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
+      <path
+        d="M44 26 Q50 32 56 26"
+        fill="none"
+        stroke="#7c4a2d"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      {/* 부스스한 머리 */}
+      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
+    </svg>
+  );
+}
+
 // LV20~29: 런닝+팬티 위에 흰 티셔츠 입은 캐릭터
 function PersonTeeIcon({ className }) {
   return (
@@ -870,6 +938,21 @@ function todayKey() {
   return dateKey(new Date());
 }
 
+// 미션 기간 설정(우선순위)에 따라 "미완료 페널티"를 주기 전에 봐줄 유예일수.
+// 급함/당일은 그날 안에 끝내는 게 기본이라 유예 없음, 내일/이번주/이번달은 그만큼 여유를 준다.
+function graceDaysForPriority(priority) {
+  switch (priority) {
+    case "tomorrow":
+      return 1;
+    case "week":
+      return 6;
+    case "month":
+      return 29;
+    default:
+      return 0; // urgent, today
+  }
+}
+
 function todayLabel() {
   return new Date().toLocaleDateString("ko-KR", {
     year: "numeric",
@@ -1372,6 +1455,8 @@ export default function Home() {
         ? { ...DEFAULT_PROFILE, ...JSON.parse(savedProfileRaw) }
         : DEFAULT_PROFILE;
 
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       let penalty = 0;
       let missedDays = 0;
       if (parsedProfile.lastActiveDate) {
@@ -1380,7 +1465,14 @@ export default function Home() {
           const dayRaw = localStorage.getItem(`missions_${dateKey(cursor)}`);
           if (dayRaw) {
             const dayMissions = JSON.parse(dayRaw);
-            const incomplete = dayMissions.filter((m) => !m.isDone);
+            // 미션의 기간 설정(급함/당일/내일/이번주/이번달)에 따라 마감일이 지난
+            // 것만 페널티로 잡는다 — "이번달"로 잡아둔 미션은 다음날 하루 안 했다고 안 깎임
+            const incomplete = dayMissions.filter((m) => {
+              if (m.isDone) return false;
+              const deadline = new Date(cursor);
+              deadline.setDate(deadline.getDate() + graceDaysForPriority(m.priority));
+              return deadline < today;
+            });
             if (incomplete.length > 0) {
               penalty += incomplete.reduce(
                 (sum, m) => sum + (m.expValue || 10),
@@ -2827,7 +2919,7 @@ export default function Home() {
           <div className="relative flex h-48 w-48 items-center justify-center">
             <span className="animate-hatch-glow absolute inset-0 rounded-full bg-amber-400/30 blur-2xl" />
             <div className="animate-pop-in relative">
-              <PersonUndiesIcon className="h-40 w-40 drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]" />
+              <PersonHatchPoseIcon className="h-40 w-40 drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]" />
             </div>
             {/* 사방으로 튀는 알 껍질 조각들 */}
             <span
