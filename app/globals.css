@@ -85,6 +85,51 @@
   animation: shard-fly 0.9s ease-out forwards;
 }
 
+/* 알이 깨지는 순간: 하얗게 번쩍이며 튀어오르는 짧은 임팩트 */
+@keyframes crack-flash {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.18);
+    filter: brightness(2.2);
+  }
+  100% {
+    transform: scale(0.85);
+    filter: brightness(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-crack-flash {
+  animation: crack-flash 0.28s ease-in forwards;
+}
+
+/* 문 챌린지: 미션 완료(HIT)로 도끼가 문에 내려찍히는 순간의 임팩트 (사라지지 않고 원래 상태로 복귀) */
+@keyframes door-hit {
+  0% {
+    transform: translateX(0) scale(1);
+    filter: brightness(1);
+  }
+  25% {
+    transform: translateX(-3px) scale(1.1);
+    filter: brightness(1.8);
+  }
+  55% {
+    transform: translateX(2px) scale(0.97);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-door-hit {
+  animation: door-hit 0.42s ease-out;
+}
+
 @keyframes hatch-glow {
   0%,
   100% {

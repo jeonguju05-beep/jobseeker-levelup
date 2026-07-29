@@ -27,875 +27,176 @@ function getStage(level) {
   return stage;
 }
 
-// LV1~9: 알. LV1은 깨끗한 알이었다가 LV9에 가까워질수록 균열이 하나씩 더 뚜렷해진다.
-// (레벨 구간 전체를 하나의 이미지로 뭉뚱그리지 않고, level을 받아 균열 개수/진하기를 보간한다)
-function EggCrackedIcon({ className, level = 1 }) {
-  // LV1 → 0(균열 없음), LV9 → 1(균열 다 드러남)
-  const progress = Math.min(1, Math.max(0, (level - 1) / 8));
-  // start~end 구간에서 서서히 나타나다가 end 이후로는 max로 고정
-  const reveal = (start, end, max) => {
-    if (progress <= start) return 0;
-    if (progress >= end) return max;
-    return (max * (progress - start)) / (end - start);
-  };
-  const crack1 = reveal(0.05, 0.4, 0.85);
-  const crack2 = reveal(0.25, 0.55, 0.8);
-  const crack3 = reveal(0.45, 0.75, 0.7);
-  const crack4 = reveal(0.6, 0.9, 0.65);
-  const chips = reveal(0.75, 1, 0.9);
-
+// LV1~9: 참고 이미지 그대로 사용 (알)
+function EggCrackedIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      <defs>
-        <radialGradient id="eggShellCracked" cx="38%" cy="30%" r="85%">
-          <stop offset="0%" stopColor="#e8dcc0" />
-          <stop offset="55%" stopColor="#c9b990" />
-          <stop offset="100%" stopColor="#8a7a58" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="50" cy="70" rx="42" ry="56" fill="url(#eggShellCracked)" />
-      <ellipse
-        cx="35"
-        cy="44"
-        rx="7"
-        ry="5"
-        fill="#7c6a45"
-        opacity="0.4"
-        transform="rotate(20 35 44)"
-      />
-      <ellipse
-        cx="63"
-        cy="57"
-        rx="6"
-        ry="4"
-        fill="#5f5236"
-        opacity="0.35"
-        transform="rotate(-15 63 57)"
-      />
-      <ellipse cx="30" cy="99" rx="5" ry="4" fill="#5f5236" opacity="0.3" />
-      <ellipse cx="68" cy="94" rx="6" ry="4" fill="#7c6a45" opacity="0.3" />
-      <ellipse cx="34" cy="36" rx="11" ry="16" fill="white" opacity="0.18" />
-      {/* 레벨이 오를수록 하나씩 더 뚜렷해지는 균열 */}
-      <path
-        d="M40 18 L46 34 L37 44 L45 58 L36 66"
-        fill="none"
-        stroke="#4a3f28"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={crack1}
-      />
-      <path
-        d="M62 22 L57 38 L66 50 L58 62"
-        fill="none"
-        stroke="#4a3f28"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={crack2}
-      />
-      <path
-        d="M55 96 L61 108 L52 116"
-        fill="none"
-        stroke="#4a3f28"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={crack3}
-      />
-      <path
-        d="M30 70 L22 78 L28 90"
-        fill="none"
-        stroke="#4a3f28"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={crack4}
-      />
-      {/* LV9에 가까워져야만 보이는, 떨어져 나가려는 껍질 조각들 */}
-      <path
-        d="M44 14 Q50 6 58 14 Q52 18 47 18 Z"
-        fill="#c9b990"
-        opacity={chips}
-      />
-      <path
-        d="M16 82 Q10 88 14 96 Q18 90 18 84 Z"
-        fill="#c9b990"
-        opacity={chips}
-      />
-    </svg>
+    <img
+      src="/characters/eggCracked.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV10~19: 런닝 + 팬티만 입은 캐릭터
+// LV10~19: 참고 이미지 그대로 사용 (흰 런닝 + 줄무늬 반바지, 고민하는 포즈)
 function PersonUndiesIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 다리 (맨다리) */}
-      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      {/* 사각팬티 (허벅지까지 덮어서 다리가 휑해 보이지 않게) */}
-      <rect x="38" y="57" width="24" height="24" rx="7" fill="#64748b" />
-      <rect x="38" y="70" width="24" height="3" fill="#475569" opacity="0.6" />
-      {/* 팔 (맨팔) */}
-      <rect x="29" y="36" width="9" height="30" rx="4" fill="#f4c199" />
-      <rect x="62" y="36" width="9" height="30" rx="4" fill="#f4c199" />
-      {/* 런닝 */}
-      <rect x="41" y="29" width="4" height="7" fill="#f8fafc" />
-      <rect x="55" y="29" width="4" height="7" fill="#f8fafc" />
-      <rect x="37" y="33" width="26" height="30" rx="8" fill="#f8fafc" />
-      {/* 머리 */}
-      <circle cx="50" cy="22" r="13" fill="#f4c199" />
-      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      {/* 부스스한 머리 */}
-      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
-    </svg>
+    <img
+      src="/characters/personUndies.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// 부화 축하 연출 전용: 팔다리를 쭉 뻗은 X자 포즈 (팔은 위로 벌려 만세, 다리도 양옆으로 벌림)
+// 부화 축하 연출 전용: LV10 단계 이미지를 그대로 재사용
 function PersonHatchPoseIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 다리 (양옆으로 벌린 자세) */}
-      <rect
-        x="40"
-        y="64"
-        width="9"
-        height="50"
-        rx="4"
-        fill="#f4c199"
-        transform="rotate(25 44.5 64)"
-      />
-      <rect
-        x="51"
-        y="64"
-        width="9"
-        height="50"
-        rx="4"
-        fill="#f4c199"
-        transform="rotate(-25 55.5 64)"
-      />
-      <ellipse cx="24" cy="108" rx="6.5" ry="3.5" fill="#f4c199" transform="rotate(25 24 108)" />
-      <ellipse cx="76" cy="108" rx="6.5" ry="3.5" fill="#f4c199" transform="rotate(-25 76 108)" />
-      {/* 사각팬티 */}
-      <rect x="38" y="57" width="24" height="24" rx="7" fill="#64748b" />
-      <rect x="38" y="70" width="24" height="3" fill="#475569" opacity="0.6" />
-      {/* 팔 (위로 쭉 뻗어 X자 만세 포즈) */}
-      <rect
-        x="29"
-        y="36"
-        width="9"
-        height="30"
-        rx="4"
-        fill="#f4c199"
-        transform="rotate(135 33.5 36)"
-      />
-      <rect
-        x="62"
-        y="36"
-        width="9"
-        height="30"
-        rx="4"
-        fill="#f4c199"
-        transform="rotate(-135 66.5 36)"
-      />
-      {/* 런닝 */}
-      <rect x="41" y="29" width="4" height="7" fill="#f8fafc" />
-      <rect x="55" y="29" width="4" height="7" fill="#f8fafc" />
-      <rect x="37" y="33" width="26" height="30" rx="8" fill="#f8fafc" />
-      {/* 머리 */}
-      <circle cx="50" cy="22" r="13" fill="#f4c199" />
-      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
-      <path
-        d="M44 26 Q50 32 56 26"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      {/* 부스스한 머리 */}
-      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
-    </svg>
+    <img
+      src="/characters/personHatch.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV20~29: 런닝+팬티 위에 흰 티셔츠 입은 캐릭터
+// LV20~29: 참고 이미지 그대로 사용 (빨간 티셔츠 + 줄무늬 반바지, 파이팅 포즈)
 function PersonTeeIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 다리 (맨다리) */}
-      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      {/* 사각팬티 (허벅지까지 덮음) */}
-      <rect x="38" y="57" width="24" height="24" rx="7" fill="#64748b" />
-      <rect x="38" y="70" width="24" height="3" fill="#475569" opacity="0.6" />
-      {/* 팔 (맨팔, 반팔 아래로 드러남) */}
-      <rect x="29" y="36" width="9" height="30" rx="4" fill="#f4c199" />
-      <rect x="62" y="36" width="9" height="30" rx="4" fill="#f4c199" />
-      {/* 흰 티셔츠 */}
-      <rect x="35" y="32" width="30" height="34" rx="9" fill="#dc2626" />
-      <rect
-        x="27"
-        y="35"
-        width="13"
-        height="12"
-        rx="5"
-        fill="#dc2626"
-        transform="rotate(-10 33 41)"
-      />
-      <rect
-        x="60"
-        y="35"
-        width="13"
-        height="12"
-        rx="5"
-        fill="#dc2626"
-        transform="rotate(10 67 41)"
-      />
-      {/* 머리 */}
-      <circle cx="50" cy="22" r="13" fill="#f4c199" />
-      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
-    </svg>
+    <img
+      src="/characters/personTee.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV30~39: 앞의 차림에 반바지까지 입은 캐릭터
+// LV30~39: 참고 이미지 그대로 사용 (빨간 티셔츠 + 파란 반바지, 허리에 손)
 function PersonShortsIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 다리 (맨다리, 종아리는 그대로) */}
-      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      {/* 팔 */}
-      <rect x="29" y="36" width="9" height="30" rx="4" fill="#f4c199" />
-      <rect x="62" y="36" width="9" height="30" rx="4" fill="#f4c199" />
-      {/* 흰 티셔츠 */}
-      <rect x="35" y="32" width="30" height="34" rx="9" fill="#dc2626" />
-      <rect
-        x="27"
-        y="35"
-        width="13"
-        height="12"
-        rx="5"
-        fill="#dc2626"
-        transform="rotate(-10 33 41)"
-      />
-      <rect
-        x="60"
-        y="35"
-        width="13"
-        height="12"
-        rx="5"
-        fill="#dc2626"
-        transform="rotate(10 67 41)"
-      />
-      {/* 반바지 */}
-      <rect x="37" y="60" width="26" height="32" rx="6" fill="#1d4ed8" />
-      {/* 머리 */}
-      <circle cx="50" cy="22" r="13" fill="#f4c199" />
-      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
-    </svg>
+    <img
+      src="/characters/personShorts.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV40~49: 앞의 차림에 상의 갑옷(가슴판+어깨보호대)까지 갖춘 캐릭터
+// LV40~49: 참고 이미지 그대로 사용 (상의 갑옷 + 어깨보호대)
 function PersonArmorTopIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 다리 (맨다리) */}
-      <rect x="40" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <rect x="51" y="64" width="9" height="50" rx="4" fill="#f4c199" />
-      <ellipse cx="44.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      <ellipse cx="55.5" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      {/* 반바지 */}
-      <rect x="37" y="60" width="26" height="32" rx="6" fill="#1d4ed8" />
-      {/* 팔 (맨팔, 어깨보호대 아래로) */}
-      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
-      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
-      {/* 가슴판 갑옷 */}
-      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
-      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
-      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
-      <circle cx="41" cy="40" r="1.5" fill="#475569" />
-      <circle cx="59" cy="40" r="1.5" fill="#475569" />
-      <circle cx="41" cy="52" r="1.5" fill="#475569" />
-      <circle cx="59" cy="52" r="1.5" fill="#475569" />
-      {/* 어깨보호대(견갑) */}
-      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      {/* 머리 */}
-      <circle cx="50" cy="22" r="13" fill="#f4c199" />
-      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
-    </svg>
+    <img
+      src="/characters/personArmorTop.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV50~59: 앞의 차림에 하의 갑옷(허벅지·정강이 보호대)까지 갖춘 캐릭터
+// LV50~59: 참고 이미지 그대로 사용 (전신 갑옷, 투구 전)
 function PersonArmorLegsIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 맨발 (신발 아직) */}
-      <ellipse cx="44" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      <ellipse cx="56" cy="117" rx="6.5" ry="3.5" fill="#f4c199" />
-      {/* 정강이 보호대 */}
-      <rect x="39" y="80" width="10" height="32" rx="4" fill="#94a3b8" />
-      <rect x="51" y="80" width="10" height="32" rx="4" fill="#94a3b8" />
-      {/* 무릎 보호대 */}
-      <circle cx="44" cy="81" r="5" fill="#64748b" />
-      <circle cx="56" cy="81" r="5" fill="#64748b" />
-      {/* 허벅지 보호대 */}
-      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
-      {/* 팔 */}
-      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
-      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
-      {/* 가슴판 갑옷 */}
-      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
-      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
-      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
-      <circle cx="41" cy="40" r="1.5" fill="#475569" />
-      <circle cx="59" cy="40" r="1.5" fill="#475569" />
-      <circle cx="41" cy="52" r="1.5" fill="#475569" />
-      <circle cx="59" cy="52" r="1.5" fill="#475569" />
-      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      {/* 머리 */}
-      <circle cx="50" cy="22" r="13" fill="#f4c199" />
-      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
-    </svg>
+    <img
+      src="/characters/personArmorLegs.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV60~69: 앞의 갑옷 차림에 갑옷 신발까지 신은 캐릭터
+// LV60~69: 참고 이미지 그대로 사용 (투구 추가, 망토 전)
 function PersonArmorBootsIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 갑옷 신발 */}
-      <rect x="37" y="106" width="13" height="12" rx="3" fill="#475569" />
-      <rect x="50" y="106" width="13" height="12" rx="3" fill="#475569" />
-      <rect x="38" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
-      <rect x="51" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
-      {/* 정강이 보호대 */}
-      <rect x="39" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
-      <rect x="51" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
-      <circle cx="44" cy="81" r="5" fill="#64748b" />
-      <circle cx="56" cy="81" r="5" fill="#64748b" />
-      {/* 허벅지 보호대 */}
-      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
-      {/* 팔 */}
-      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
-      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
-      {/* 가슴판 갑옷 */}
-      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
-      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
-      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
-      <circle cx="41" cy="40" r="1.5" fill="#475569" />
-      <circle cx="59" cy="40" r="1.5" fill="#475569" />
-      <circle cx="41" cy="52" r="1.5" fill="#475569" />
-      <circle cx="59" cy="52" r="1.5" fill="#475569" />
-      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      {/* 머리 */}
-      <circle cx="50" cy="22" r="13" fill="#f4c199" />
-      <circle cx="45" cy="21" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="21" r="1.6" fill="#1c1917" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path d="M36 16 Q50 2 64 16 Q58 8 50 9 Q42 8 36 16 Z" fill="#3f2c1d" />
-    </svg>
+    <img
+      src="/characters/personArmorBoots.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV70~79: 앞의 갑옷 차림에 투구까지 쓴 캐릭터
+// LV70~79: 참고 이미지 그대로 사용 (투구 + 붉은 망토)
 function PersonHelmetIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 갑옷 신발 */}
-      <rect x="37" y="106" width="13" height="12" rx="3" fill="#475569" />
-      <rect x="50" y="106" width="13" height="12" rx="3" fill="#475569" />
-      <rect x="38" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
-      <rect x="51" y="109" width="11" height="2.5" rx="1" fill="#e2e8f0" opacity="0.5" />
-      {/* 정강이 보호대 */}
-      <rect x="39" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
-      <rect x="51" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
-      <circle cx="44" cy="81" r="5" fill="#64748b" />
-      <circle cx="56" cy="81" r="5" fill="#64748b" />
-      {/* 허벅지 보호대 */}
-      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
-      {/* 팔 */}
-      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
-      <rect x="62" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="67" cy="78" r="4.2" fill="#f4c199" />
-      {/* 가슴판 갑옷 */}
-      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
-      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
-      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
-      <circle cx="41" cy="40" r="1.5" fill="#475569" />
-      <circle cx="59" cy="40" r="1.5" fill="#475569" />
-      <circle cx="41" cy="52" r="1.5" fill="#475569" />
-      <circle cx="59" cy="52" r="1.5" fill="#475569" />
-      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      {/* 투구 (얼굴 아래쪽만 남기고 덮음) */}
-      <path
-        d="M37 24 Q37 6 50 6 Q63 6 63 24 Q63 29 59 31 L41 31 Q37 29 37 24 Z"
-        fill="#94a3b8"
-      />
-      <rect x="42" y="19" width="16" height="4" rx="2" fill="#1c2431" />
-      <circle cx="46" cy="21" r="0.8" fill="#e2e8f0" />
-      <circle cx="54" cy="21" r="0.8" fill="#e2e8f0" />
-      <path d="M48 4 Q50 -2 52 4 L52 8 L48 8 Z" fill="#7f1d1d" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src="/characters/personHelmet.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV80~89: 앞의 차림에 칼까지 챙긴 캐릭터
+// LV80~89: 참고 이미지 그대로 사용 (전투 도끼 장착)
 function PersonSwordIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 칼 (오른쪽) */}
-      <path d="M70 8 L74 8 L72 30 Z" fill="#cbd5e1" />
-      <rect x="70" y="30" width="4" height="42" fill="#e2e8f0" />
-      <rect x="66" y="70" width="12" height="4" rx="2" fill="#78350f" />
-      <rect x="70.5" y="73" width="3" height="10" fill="#4a3728" />
-      <circle cx="72" cy="85" r="3" fill="#eab308" />
-      {/* 갑옷 신발 */}
-      <rect x="37" y="106" width="13" height="12" rx="3" fill="#475569" />
-      <rect x="50" y="106" width="13" height="12" rx="3" fill="#475569" />
-      {/* 정강이 보호대 */}
-      <rect x="39" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
-      <rect x="51" y="80" width="10" height="28" rx="4" fill="#94a3b8" />
-      <circle cx="44" cy="81" r="5" fill="#64748b" />
-      <circle cx="56" cy="81" r="5" fill="#64748b" />
-      {/* 허벅지 보호대 */}
-      <rect x="37" y="60" width="26" height="22" rx="6" fill="#94a3b8" />
-      {/* 팔 */}
-      <rect x="28" y="42" width="10" height="34" rx="5" fill="#94a3b8" />
-      <circle cx="33" cy="78" r="4.2" fill="#f4c199" />
-      {/* 가슴판 갑옷 */}
-      <rect x="35" y="32" width="30" height="34" rx="8" fill="#94a3b8" />
-      <rect x="38" y="35" width="3" height="26" rx="1.5" fill="#e2e8f0" opacity="0.5" />
-      <rect x="48" y="34" width="4" height="30" rx="2" fill="#64748b" />
-      <circle cx="41" cy="40" r="1.5" fill="#475569" />
-      <circle cx="59" cy="40" r="1.5" fill="#475569" />
-      <circle cx="41" cy="52" r="1.5" fill="#475569" />
-      <circle cx="59" cy="52" r="1.5" fill="#475569" />
-      <ellipse cx="33" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="67" cy="36" rx="7" ry="6" fill="#94a3b8" />
-      <ellipse cx="31" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      <ellipse cx="69" cy="34" rx="3" ry="2" fill="#e2e8f0" opacity="0.6" />
-      {/* 투구 */}
-      <path
-        d="M37 24 Q37 6 50 6 Q63 6 63 24 Q63 29 59 31 L41 31 Q37 29 37 24 Z"
-        fill="#94a3b8"
-      />
-      <rect x="42" y="19" width="16" height="4" rx="2" fill="#1c2431" />
-      <circle cx="46" cy="21" r="0.8" fill="#e2e8f0" />
-      <circle cx="54" cy="21" r="0.8" fill="#e2e8f0" />
-      <path d="M48 4 Q50 -2 52 4 L52 8 L48 8 Z" fill="#7f1d1d" />
-      <path
-        d="M45 27 Q50 30 55 27"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src="/characters/personSword.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV90+: 완전무장하고 옆모습으로 힘차게 뛰어나가는 캐릭터
-function PersonBattleReadyIcon({ className, attacking }) {
-  if (attacking) return <PersonDoorThrustIcon className={className} />;
+// LV90+: 참고 이미지 그대로 사용 (금장 갑옷 + 전투 도끼 + 망토, 힘차게 달려나가는 모습)
+// 문 챌린지 공격 중에는 문을 부수는 전용 이미지로 바꿔 보여준다
+function PersonBattleReadyIcon({ className, attacking, swing }) {
+  if (attacking) return <PersonDoorThrustIcon className={className} swing={swing} />;
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 스피드 잔상 (뒤쪽) */}
-      <path
-        d="M2 35 L20 35"
-        stroke="#94a3b8"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        opacity="0.4"
-      />
-      <path
-        d="M0 50 L16 50"
-        stroke="#94a3b8"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        opacity="0.3"
-      />
-      <path
-        d="M4 65 L18 65"
-        stroke="#94a3b8"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        opacity="0.25"
-      />
-
-      {/* 뒤쪽 다리: 허벅지 + 정강이, 뒤로 차며 접힌 자세 */}
-      <rect
-        x="46"
-        y="70"
-        width="8"
-        height="15"
-        rx="4"
-        fill="#94a3b8"
-        transform="rotate(35 50 70)"
-      />
-      <rect
-        x="36"
-        y="80.6"
-        width="7"
-        height="17"
-        rx="3"
-        fill="#94a3b8"
-        transform="rotate(70 39.4 80.6)"
-      />
-      <ellipse
-        cx="25"
-        cy="88"
-        rx="6.5"
-        ry="4"
-        fill="#475569"
-        transform="rotate(65 25 88)"
-      />
-
-      {/* 앞쪽 다리: 허벅지 + 정강이, 앞으로 크게 내딛는 자세 */}
-      <rect
-        x="44"
-        y="70"
-        width="8"
-        height="16"
-        rx="4"
-        fill="#94a3b8"
-        transform="rotate(-25 48 70)"
-      />
-      <rect
-        x="51"
-        y="84.5"
-        width="7"
-        height="18"
-        rx="3"
-        fill="#94a3b8"
-        transform="rotate(-45 54.5 84.5)"
-      />
-      <ellipse
-        cx="67"
-        cy="97"
-        rx="7"
-        ry="4"
-        fill="#475569"
-        transform="rotate(-45 67 97)"
-      />
-
-      {/* 몸통 (앞으로 기울인 가슴판 갑옷) */}
-      <ellipse
-        cx="50"
-        cy="55"
-        rx="17"
-        ry="22"
-        fill="#94a3b8"
-        transform="rotate(-12 50 55)"
-      />
-      <rect
-        x="46"
-        y="40"
-        width="3"
-        height="26"
-        rx="1.5"
-        fill="#e2e8f0"
-        opacity="0.5"
-        transform="rotate(-12 50 55)"
-      />
-      <circle cx="42" cy="48" r="1.4" fill="#475569" transform="rotate(-12 50 55)" />
-      <circle cx="42" cy="60" r="1.4" fill="#475569" transform="rotate(-12 50 55)" />
-
-      {/* 뒤쪽 팔: 뒤로 힘차게 젖힌 자세 (머리와 안 겹치도록 수평에 가깝게) */}
-      <rect
-        x="56"
-        y="40"
-        width="8"
-        height="22"
-        rx="4"
-        fill="#94a3b8"
-        transform="rotate(90 60 40)"
-      />
-
-      {/* 앞쪽 팔 + 칼: 앞으로 뻗은 자세 */}
-      <rect
-        x="42"
-        y="40"
-        width="8"
-        height="22"
-        rx="4"
-        fill="#94a3b8"
-        transform="rotate(-60 46 40)"
-      />
-      <circle cx="65" cy="51" r="4" fill="#f4c199" />
-      <path d="M65 49 L94 43 L96 47 L67 53 Z" fill="#cbd5e1" />
-      <rect x="59" y="48" width="8" height="5" rx="2" fill="#78350f" />
-
-      {/* 머리 (피부, 옆모습) */}
-      <circle cx="53" cy="26" r="11" fill="#f4c199" />
-
-      {/* 투구: 머리 전체를 감싸는 돔 (얼굴 쪽만 창처럼 트여 있음) */}
-      <ellipse cx="51" cy="23" rx="13.5" ry="15" fill="#94a3b8" />
-      <ellipse cx="51" cy="23" rx="13.5" ry="15" fill="none" stroke="#475569" strokeWidth="1" opacity="0.6" />
-      {/* 얼굴 창 (피부 노출부 + 눈) */}
-      <circle cx="60" cy="27" r="6.2" fill="#f4c199" />
-      <circle cx="63.5" cy="26" r="1.5" fill="#1c1917" />
-      {/* 투구 뒤쪽으로 휘날리는 장식 깃 */}
-      <path d="M40 16 Q24 18 18 27 Q32 22 42 22 Z" fill="#7f1d1d" />
-      {/* 투구 이마 능선 장식 */}
-      <path
-        d="M48 9 Q51 6 54 9"
-        fill="none"
-        stroke="#cbd5e1"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src="/characters/personBattleReady.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
-// LV90+ 문 챌린지 중: 뛰어가는 대신 눈앞의 문을 검으로 힘껏 찌르는 자세
-function PersonDoorThrustIcon({ className }) {
+// LV90+ 문 챌린지 중: 평소에는 문 앞에 자세를 잡은 모습, 미션을 완료해 HIT이 들어가는
+// 순간에만 참고 이미지 2장(자세 잡기 ↔ 도끼로 내려찍어 문이 부서지는 순간)을 스왑해
+// 실제로 "때리는" 애니메이션처럼 보이게 한다.
+function PersonDoorThrustIcon({ className, swing }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 앞쪽에 서 있는 문 */}
-      <rect x="78" y="18" width="20" height="70" rx="2" fill="#7c4a2d" />
-      <rect x="81" y="22" width="14" height="30" rx="1.5" fill="#5c3a22" />
-      <rect x="81" y="56" width="14" height="24" rx="1.5" fill="#5c3a22" />
-      <circle cx="84" cy="54" r="1.6" fill="#e2b76b" />
-      {/* 칼끝이 닿는 충격 효과 */}
-      <path
-        d="M74 44 L80 40 M74 48 L82 48 M74 52 L80 56"
-        stroke="#fde68a"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-
-      {/* 런지 자세: 뒤쪽 다리는 곧게 뻗어 버티고, 앞쪽 다리는 깊게 굽힘 */}
-      <rect
-        x="45"
-        y="70"
-        width="9"
-        height="42"
-        rx="4"
-        fill="#94a3b8"
-        transform="rotate(48 49.5 70)"
-      />
-      <ellipse
-        cx="16"
-        cy="98"
-        rx="7"
-        ry="4.5"
-        fill="#475569"
-        transform="rotate(20 16 98)"
-      />
-
-      <rect
-        x="44"
-        y="70"
-        width="9"
-        height="17"
-        rx="4"
-        fill="#94a3b8"
-        transform="rotate(-35 48.5 70)"
-      />
-      <rect
-        x="53"
-        y="84"
-        width="8"
-        height="21"
-        rx="3.5"
-        fill="#94a3b8"
-        transform="rotate(-8 57 84)"
-      />
-      <ellipse cx="60" cy="106" rx="7.5" ry="4.5" fill="#475569" />
-
-      {/* 몸통: 찌르기 반동으로 살짝 앞으로 숙인 가슴판 갑옷 */}
-      <ellipse
-        cx="49"
-        cy="55"
-        rx="17"
-        ry="22"
-        fill="#94a3b8"
-        transform="rotate(-6 49 55)"
-      />
-      <rect
-        x="45"
-        y="39"
-        width="3"
-        height="26"
-        rx="1.5"
-        fill="#e2e8f0"
-        opacity="0.5"
-        transform="rotate(-6 49 55)"
-      />
-      <circle cx="41" cy="48" r="1.4" fill="#475569" transform="rotate(-6 49 55)" />
-      <circle cx="41" cy="60" r="1.4" fill="#475569" transform="rotate(-6 49 55)" />
-
-      {/* 뒤쪽 팔: 균형을 잡으려 뒤로 당긴 자세 */}
-      <rect
-        x="54"
-        y="40"
-        width="8"
-        height="20"
-        rx="4"
-        fill="#94a3b8"
-        transform="rotate(150 58 40)"
-      />
-
-      {/* 앞쪽 팔 + 칼: 문을 향해 수평으로 완전히 뻗어 찌르는 자세 */}
-      <rect x="46" y="39" width="26" height="8" rx="4" fill="#94a3b8" />
-      <circle cx="72" cy="43" r="4" fill="#f4c199" />
-      <path d="M72 41 L98 41 L98 45 L72 45 Z" fill="#cbd5e1" />
-      <rect x="66" y="40" width="8" height="6" rx="2" fill="#78350f" />
-
-      {/* 머리 (피부, 옆모습) */}
-      <circle cx="52" cy="26" r="11" fill="#f4c199" />
-
-      {/* 투구: 머리 전체를 감싸는 돔 (얼굴 쪽만 창처럼 트여 있음) */}
-      <ellipse cx="50" cy="23" rx="13.5" ry="15" fill="#94a3b8" />
-      <ellipse cx="50" cy="23" rx="13.5" ry="15" fill="none" stroke="#475569" strokeWidth="1" opacity="0.6" />
-      {/* 얼굴 창 (피부 노출부 + 눈) */}
-      <circle cx="59" cy="27" r="6.2" fill="#f4c199" />
-      <circle cx="62.5" cy="26" r="1.5" fill="#1c1917" />
-      {/* 투구 뒤쪽으로 휘날리는 장식 깃 */}
-      <path d="M39 16 Q23 18 17 27 Q31 22 41 22 Z" fill="#7f1d1d" />
-      {/* 투구 이마 능선 장식 */}
-      <path
-        d="M47 9 Q50 6 53 9"
-        fill="none"
-        stroke="#cbd5e1"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src={swing ? "/characters/personDoorBreak.png" : "/characters/personDoorReady.png"}
+      alt=""
+      aria-hidden="true"
+      className={`${className} ${swing ? "animate-door-hit" : ""}`}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
 // 문 챌린지 클리어(최종 합격) 축하 연출: 갑옷을 벗고 관복을 입은 채 벼슬을 받는 모습
 function PersonGwanbokIcon({ className }) {
   return (
-    <svg viewBox="0 0 100 130" className={className} aria-hidden="true">
-      {/* 신발 (관복 아래로 살짝 보이는 검은 신) */}
-      <ellipse cx="41" cy="114" rx="7" ry="4" fill="#1c1917" />
-      <ellipse cx="59" cy="114" rx="7" ry="4" fill="#1c1917" />
-
-      {/* 관복 (넓게 퍼지는 긴 예복) */}
-      <path d="M36 46 L64 46 L74 112 L26 112 Z" fill="#1e3a8a" />
-      <path d="M36 46 L64 46 L68 66 L32 66 Z" fill="#1d4ed8" opacity="0.5" />
-
-      {/* 소매 (넓은 양팔 소매, 앞에서 손을 모은 자세) */}
-      <path d="M37 50 L18 62 L25 82 L42 76 Z" fill="#1e3a8a" />
-      <path d="M63 50 L82 62 L75 82 L58 76 Z" fill="#1e3a8a" />
-      <circle cx="42" cy="80" r="4.2" fill="#f4c199" />
-      <circle cx="58" cy="80" r="4.2" fill="#f4c199" />
-      {/* 홀 (양손으로 맞잡은 예식용 판) */}
-      <rect x="46" y="70" width="8" height="20" rx="2" fill="#e2b76b" />
-
-      {/* 허리띠 */}
-      <rect x="30" y="70" width="40" height="6" rx="2" fill="#facc15" />
-      {/* 흉배 (관직을 나타내는 가슴 장식) */}
-      <rect x="44" y="52" width="12" height="12" rx="2" fill="#dc2626" stroke="#facc15" strokeWidth="1.2" />
-
-      {/* 머리 */}
-      <circle cx="50" cy="26" r="13" fill="#f4c199" />
-      <circle cx="45" cy="25" r="1.6" fill="#1c1917" />
-      <circle cx="55" cy="25" r="1.6" fill="#1c1917" />
-      <path
-        d="M45 31 Q50 34 55 31"
-        fill="none"
-        stroke="#7c4a2d"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-
-      {/* 사모 (검은 관모, 양옆으로 날개 모양) */}
-      <rect x="18" y="15" width="15" height="4.5" rx="2" fill="#1c1917" />
-      <rect x="67" y="15" width="15" height="4.5" rx="2" fill="#1c1917" />
-      <path d="M36 18 Q36 4 50 4 Q64 4 64 18 Q64 22 50 22 Q36 22 36 18 Z" fill="#1c1917" />
-    </svg>
+    <img
+      src="/characters/personGwanbok.png"
+      alt=""
+      aria-hidden="true"
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
@@ -914,10 +215,17 @@ const STAGE_VISUALS = {
 
 // stage.visual이 있으면 해당 SVG로, 없으면 그냥 이모지로 표시
 // door: 만렙(LV90) 이후 문 챌린지 중이면 뛰어가는 자세 대신 문을 찌르는 자세로 보여준다
-function StageVisual({ stage, level, className, door }) {
+function StageVisual({ stage, level, className, door, swing }) {
   const VisualComponent = STAGE_VISUALS[stage.visual];
   if (VisualComponent)
-    return <VisualComponent className={className} level={level} attacking={door} />;
+    return (
+      <VisualComponent
+        className={className}
+        level={level}
+        attacking={door}
+        swing={swing}
+      />
+    );
   return <span className={className}>{stage.emoji}</span>;
 }
 
@@ -1408,9 +716,14 @@ export default function Home() {
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showCharacterZoom, setShowCharacterZoom] = useState(false);
   const [showHatchCelebration, setShowHatchCelebration] = useState(false);
+  // 부화 연출 진행 단계: "egg"(흔들림) → "crack"(깨지는 순간 플래시) → "hatched"(캐릭터 등장)
+  const [hatchPhase, setHatchPhase] = useState("egg");
   const [showDoorSetup, setShowDoorSetup] = useState(false);
   const [doorCompanyInput, setDoorCompanyInput] = useState("");
   const [showDoorBreak, setShowDoorBreak] = useState(false);
+  // 문 챌린지 중 미션 완료(HIT)가 들어간 순간에만 잠깐 true가 되어
+  // 도끼로 내려찍는 이미지로 스왑되는 "때리는" 애니메이션을 재생한다.
+  const [doorSwing, setDoorSwing] = useState(false);
   const prevDoorRef = useRef(null);
 
   // 수련(hunt) 집중 모드: 큰 타이머로 화면을 꽉 채워 몰입시키는 뽀모도로 스타일 팝업
@@ -1547,6 +860,12 @@ export default function Home() {
     return { ...prevProfile, exp: prevProfile.exp + expAmount };
   }
 
+  // 문에 HIT이 들어간 순간 잠깐 "내려찍는" 이미지로 바꿔 보여주고, 애니메이션이 끝나면 원래 자세로 되돌린다
+  function pulseDoorSwing() {
+    setDoorSwing(true);
+    setTimeout(() => setDoorSwing(false), 420);
+  }
+
   // 문이 0체력이 된 "순간"에만 한 번 축하 연출을 띄우고 문을 치운다 (다음 회사에 재도전 가능)
   useEffect(() => {
     if (!loaded) return;
@@ -1609,6 +928,7 @@ export default function Home() {
       queueGift("레벨업 선물", profile.levelUpReward);
       // LV9(알) → LV10(런닝+사각팬티) 전환은 알을 깨고 나오는 특별한 순간이라 따로 축하해준다
       if (prevLevelRef.current < 10 && level >= 10) {
+        setHatchPhase("egg");
         setShowHatchCelebration(true);
       }
       prevLevelRef.current = level;
@@ -1618,6 +938,17 @@ export default function Home() {
     prevLevelRef.current = level;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile.exp, loaded]);
+
+  // 부화 연출 진행: 알이 흔들리다가 → 깨지는 플래시 → 캐릭터 등장 순서로 자동 전환
+  useEffect(() => {
+    if (!showHatchCelebration) return;
+    const t1 = setTimeout(() => setHatchPhase("crack"), 900);
+    const t2 = setTimeout(() => setHatchPhase("hatched"), 1150);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [showHatchCelebration]);
 
   // 오늘 미션 3개를 처음 달성한 순간 감지 (날짜별로 한 번만)
   useEffect(() => {
@@ -1712,6 +1043,7 @@ export default function Home() {
       setMissions(next);
       if (expGain > 0) {
         setProfile((p) => gainProgress(p, expGain));
+        if (profileRef.current.door) pulseDoorSwing();
       }
       if (breakJustFinished) {
         setComfortMsg("휴식 끝! 다시 집중해볼까요?");
@@ -1801,6 +1133,7 @@ export default function Home() {
     const { id, exp } = rewardPopup;
     const mission = missions.find((m) => m.id === id);
     setProfile((p) => gainProgress(p, exp));
+    if (profile.door) pulseDoorSwing();
     setMissions((prev) =>
       prev.map((m) => (m.id === id ? { ...m, expClaimed: true } : m))
     );
@@ -2043,7 +1376,7 @@ export default function Home() {
               aria-label="캐릭터 크게 보기"
               className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-cyan-400/60 bg-slate-950/80 text-3xl shadow-[0_0_18px_rgba(34,211,238,0.5)] transition hover:border-cyan-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.7)]"
             >
-              <StageVisual stage={stage} level={level} door={!!profile.door} className="h-11 w-11" />
+              <StageVisual stage={stage} level={level} door={!!profile.door} swing={doorSwing} className="h-11 w-11" />
               <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-cyan-300/60 bg-gradient-to-r from-cyan-500 to-violet-600 px-2 py-0.5 font-display text-[11px] text-white shadow-[0_0_10px_rgba(34,211,238,0.6)]">
                 LV{level}
               </span>
@@ -2660,7 +1993,7 @@ export default function Home() {
               <span className="absolute left-1/2 top-full -mt-px h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[13px] border-x-transparent border-t-rose-50" />
             </div>
             <div className="animate-shake mt-3 drop-shadow-[0_0_40px_rgba(244,63,94,0.55)]">
-              <StageVisual stage={stage} level={level} door={!!profile.door} className="h-40 w-40 text-[7rem] leading-none" />
+              <StageVisual stage={stage} level={level} door={!!profile.door} swing={doorSwing} className="h-40 w-40 text-[7rem] leading-none" />
             </div>
           </div>
           <p className="text-xs text-slate-400">탭하면 닫혀요</p>
@@ -2901,7 +2234,7 @@ export default function Home() {
           className="fixed inset-0 z-[65] flex cursor-pointer flex-col items-center justify-center gap-4 bg-black/80 p-4"
         >
           <div className="rounded-3xl border-2 border-cyan-400/60 bg-slate-950/80 p-6 shadow-[0_0_40px_rgba(34,211,238,0.4)]">
-            <StageVisual stage={stage} level={level} door={!!profile.door} className="h-56 w-56" />
+            <StageVisual stage={stage} level={level} door={!!profile.door} swing={doorSwing} className="h-56 w-56" />
           </div>
           <p className="font-display text-base tracking-wide text-cyan-100">
             LV.{level} {stage.label}
@@ -2918,37 +2251,52 @@ export default function Home() {
           </p>
           <div className="relative flex h-48 w-48 items-center justify-center">
             <span className="animate-hatch-glow absolute inset-0 rounded-full bg-amber-400/30 blur-2xl" />
-            <div className="animate-pop-in relative">
-              <PersonHatchPoseIcon className="h-40 w-40 drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]" />
-            </div>
-            {/* 사방으로 튀는 알 껍질 조각들 */}
-            <span
-              className="animate-shard absolute left-1/2 top-1/2 text-xl"
-              style={{ "--shard-x": "70px", "--shard-y": "-60px" }}
-            >
-              🥚
-            </span>
-            <span
-              className="animate-shard absolute left-1/2 top-1/2 text-lg"
-              style={{ "--shard-x": "-75px", "--shard-y": "-45px" }}
-            >
-              🥚
-            </span>
-            <span
-              className="animate-shard absolute left-1/2 top-1/2 text-lg"
-              style={{ "--shard-x": "60px", "--shard-y": "55px" }}
-            >
-              🥚
-            </span>
-            <span
-              className="animate-shard absolute left-1/2 top-1/2 text-xl"
-              style={{ "--shard-x": "-65px", "--shard-y": "60px" }}
-            >
-              🥚
-            </span>
+            {hatchPhase !== "hatched" ? (
+              // 1단계: 알이 부들부들 떨리다가, 2단계: 깨지는 순간 하얗게 번쩍인다
+              <div
+                className={
+                  hatchPhase === "crack"
+                    ? "animate-crack-flash relative"
+                    : "animate-shake relative"
+                }
+              >
+                <EggCrackedIcon className="h-40 w-40 drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]" />
+              </div>
+            ) : (
+              <>
+                <div className="animate-pop-in relative">
+                  <PersonHatchPoseIcon className="h-40 w-40 drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]" />
+                </div>
+                {/* 사방으로 튀는 알 껍질 조각들 */}
+                <span
+                  className="animate-shard absolute left-1/2 top-1/2 text-xl"
+                  style={{ "--shard-x": "70px", "--shard-y": "-60px" }}
+                >
+                  🥚
+                </span>
+                <span
+                  className="animate-shard absolute left-1/2 top-1/2 text-lg"
+                  style={{ "--shard-x": "-75px", "--shard-y": "-45px" }}
+                >
+                  🥚
+                </span>
+                <span
+                  className="animate-shard absolute left-1/2 top-1/2 text-lg"
+                  style={{ "--shard-x": "60px", "--shard-y": "55px" }}
+                >
+                  🥚
+                </span>
+                <span
+                  className="animate-shard absolute left-1/2 top-1/2 text-xl"
+                  style={{ "--shard-x": "-65px", "--shard-y": "60px" }}
+                >
+                  🥚
+                </span>
+              </>
+            )}
           </div>
           <p className="max-w-xs font-display text-lg text-amber-100">
-            LV.10 부화!
+            {hatchPhase === "hatched" ? "LV.10 부화!" : "알이 흔들리기 시작한다..."}
           </p>
           <blockquote className="max-w-xs rounded-2xl border border-amber-300/40 bg-amber-500/5 p-4 text-sm leading-relaxed text-amber-50/90 italic">
             &ldquo;새는 알에서 나오기 위해 싸운다.
