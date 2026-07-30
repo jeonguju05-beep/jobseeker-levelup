@@ -172,16 +172,17 @@ function PersonBattleReadyIcon({ className, attacking, swing }) {
   );
 }
 
-// LV90+ 문 챌린지 중: 평소에는 문 앞에 자세를 잡은 모습, 미션을 완료해 HIT이 들어가는
-// 순간에만 참고 이미지 2장(자세 잡기 ↔ 도끼로 내려찍어 문이 부서지는 순간)을 스왑해
-// 실제로 "때리는" 애니메이션처럼 보이게 한다.
+// LV90+ 문 챌린지 중: 평소에는 문 앞에 자세를 잡은 정지 이미지, 미션을 완료해 HIT이 들어가는
+// 순간에는 자세 잡기 → 내려찍기로 이어지는 GIF가 "한 번만" 재생되고 마지막 프레임(내려찍는 순간)에서 멈춘다
+// (GIF 자체에 반복 재생 정보가 없어 루프를 돌지 않는다). 스윙 상태가 끝나면 다시 정지 이미지로 되돌아간다.
 function PersonDoorThrustIcon({ className, swing }) {
   return (
     <img
-      src={swing ? "/characters/personDoorBreak.png" : "/characters/personDoorReady.png"}
+      key={swing ? "hit" : "ready"}
+      src={swing ? "/characters/doorHit.gif" : "/characters/personDoorReady.png"}
       alt=""
       aria-hidden="true"
-      className={`${className} ${swing ? "animate-door-hit" : ""}`}
+      className={className}
       style={{ objectFit: "contain" }}
     />
   );
@@ -295,6 +296,12 @@ function todayIso() {
 function daysUntil(dateStr) {
   const diff = (new Date(dateStr) - new Date(todayIso())) / 86400000;
   return Math.round(diff);
+}
+
+// 일정관리(ISO, 0-패딩)에서 고른 날짜를 일일퀘스트 저장 키 포맷(dateKey, 0-패딩 없음)으로 변환
+function missionKeyFromIso(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${y}-${m}-${d}`;
 }
 
 // 달력 그리드용 셀 배열 생성(빈 칸=null), 일요일 시작
@@ -712,6 +719,10 @@ export default function Home() {
   const [rewardPopup, setRewardPopup] = useState(null); // { id, exp }
   const [giftQueue, setGiftQueue] = useState([]); // [{ id, label, reward, opened }]
   const [comfortMsg, setComfortMsg] = useState("");
+  // 지금 떠 있는 위로 메시지가 "방금 HIT" 반응인지 여부 (문 챌린지 중 애니메이션을 이 경우에만 보여주기 위함).
+  // 오늘 마지막 미션을 완료하면 "미션 보상" 위로와 "오늘 전부 완료" 위로가 연달아 뜨는데,
+  // 둘 다 같은 comfortMsg를 공유하다 보니 HIT 애니메이션도 두 번 재생되는 것처럼 보였다.
+  const [comfortIsHit, setComfortIsHit] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showCharacterZoom, setShowCharacterZoom] = useState(false);
@@ -753,6 +764,8 @@ export default function Home() {
   });
   const [newDeadlineTitle, setNewDeadlineTitle] = useState("");
   const [newDeadlineDate, setNewDeadlineDate] = useState("");
+  // 일정관리 달력에서 고른 날짜의 일일퀘스트 목록 (읽기 전용 미리보기)
+  const [selectedDateMissions, setSelectedDateMissions] = useState([]);
 
   const prevLevelRef = useRef(1);
   const prevAllDoneRef = useRef(false);
@@ -840,6 +853,24 @@ export default function Home() {
     localStorage.setItem("deadlines", JSON.stringify(deadlines));
   }, [deadlines, loaded]);
 
+  // 일정관리 달력에서 날짜를 고르면(선택 안 했으면 오늘 기준) 그날의 일일퀘스트를 불러와 보여준다.
+  // 오늘 날짜면 저장된 값 대신 지금 화면에 떠 있는 missions를 그대로 써서 체크 상태가 실시간으로 맞도록 한다.
+  useEffect(() => {
+    if (!loaded) return;
+    const effectiveIso = newDeadlineDate || todayIso();
+    const key = missionKeyFromIso(effectiveIso);
+    if (key === todayKey()) {
+      setSelectedDateMissions(missions);
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(`missions_${key}`);
+      setSelectedDateMissions(raw ? JSON.parse(raw) : []);
+    } catch {
+      setSelectedDateMissions([]);
+    }
+  }, [newDeadlineDate, missions, loaded]);
+
   // 만렙(LV90) 이후 문이 떠 있는 동안은 EXP가 늘어나는 대신, 미션 종류·EXP값과 무관하게
   // 완료 1회당 문 체력을 1씩 깎는다. 문이 없으면 지금까지처럼 EXP를 그대로 더한다.
   // 미션 카드에 보여줄 보상 표기: 문 챌린지 중이면 EXP 대신 고정 데미지(HIT)로 표시한다
@@ -863,7 +894,8 @@ export default function Home() {
   // 문에 HIT이 들어간 순간 잠깐 "내려찍는" 이미지로 바꿔 보여주고, 애니메이션이 끝나면 원래 자세로 되돌린다
   function pulseDoorSwing() {
     setDoorSwing(true);
-    setTimeout(() => setDoorSwing(false), 420);
+    // GIF가 몇 번 반복될 만큼 충분히 유지했다가, 계속 열려있어도 더 이상 반복되지 않도록 멈춘다
+    setTimeout(() => setDoorSwing(false), 2800);
   }
 
   // 문이 0체력이 된 "순간"에만 한 번 축하 연출을 띄우고 문을 치운다 (다음 회사에 재도전 가능)
@@ -966,6 +998,7 @@ export default function Home() {
     if (!loaded) return;
     const nowAllDone = missions.length > 0 && missions.every((m) => m.isDone);
     if (nowAllDone && !prevAllDoneRef.current) {
+      setComfortIsHit(false);
       setComfortMsg(
         DAY_COMPLETE_MESSAGES[
           Math.floor(Math.random() * DAY_COMPLETE_MESSAGES.length)
@@ -982,7 +1015,8 @@ export default function Home() {
     return () => clearTimeout(t);
   }, [penaltyMsg]);
 
-  function showComfort() {
+  function showComfort(isHit) {
+    setComfortIsHit(!!isHit);
     setComfortMsg(
       COMFORT_MESSAGES[Math.floor(Math.random() * COMFORT_MESSAGES.length)]
     );
@@ -1139,7 +1173,7 @@ export default function Home() {
     );
     setRewardPopup(null);
     if (profile.comfortRewardedDate !== todayKey()) {
-      showComfort();
+      showComfort(!!profile.door);
       setProfile((p) => ({ ...p, comfortRewardedDate: todayKey() }));
     }
     if (mission?.type === "dungeon") {
@@ -1730,6 +1764,53 @@ export default function Home() {
             />
           </div>
 
+          {/* 달력에서 고른 날짜(기본값 오늘)의 일일퀘스트를 읽기 전용으로 보여줌 */}
+          <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] backdrop-blur-2xl">
+            <p className="mb-2 font-display text-sm tracking-wide text-cyan-100">
+              {(() => {
+                const [, m, d] = (newDeadlineDate || todayIso()).split("-").map(Number);
+                return `${m}월 ${d}일`;
+              })()}{" "}
+              퀘스트
+              {(newDeadlineDate || todayIso()) === todayIso() && (
+                <span className="ml-1.5 text-xs text-cyan-300/70">(오늘)</span>
+              )}
+            </p>
+            {selectedDateMissions.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-white/15 bg-white/[0.02] p-3 text-center text-sm text-cyan-200/70">
+                이 날짜에 기록된 퀘스트가 없어요.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {selectedDateMissions.map((m) => {
+                  const meta = MISSION_TYPE_META[m.type] || MISSION_TYPE_META.general;
+                  return (
+                    <div
+                      key={m.id}
+                      className={`flex items-center gap-2 rounded-xl border border-l-[4px] border-white/10 bg-black/20 px-3 py-2 text-sm ${meta.leftAccent} ${
+                        m.isDone ? "opacity-55" : ""
+                      }`}
+                    >
+                      <span className={m.isDone ? "text-emerald-400" : "text-slate-500"}>
+                        {m.isDone ? "✓" : "○"}
+                      </span>
+                      <span
+                        className={
+                          m.isDone
+                            ? "text-emerald-300 line-through"
+                            : "text-cyan-50"
+                        }
+                      >
+                        {m.type !== "hunt" && meta.prefix}
+                        {m.content}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <div className="relative mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_20px_rgba(34,211,238,0.1)] backdrop-blur-2xl">
             <div className="flex flex-col gap-2">
               <input
@@ -1992,8 +2073,16 @@ export default function Home() {
               <span className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-[11px] border-t-[16px] border-x-transparent border-t-rose-300/60" />
               <span className="absolute left-1/2 top-full -mt-px h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[13px] border-x-transparent border-t-rose-50" />
             </div>
-            <div className="animate-shake mt-3 drop-shadow-[0_0_40px_rgba(244,63,94,0.55)]">
-              <StageVisual stage={stage} level={level} door={!!profile.door} swing={doorSwing} className="h-40 w-40 text-[7rem] leading-none" />
+            <div
+              className={`mt-3 drop-shadow-[0_0_40px_rgba(244,63,94,0.55)] ${
+                profile.door ? "" : "animate-shake"
+              }`}
+            >
+              {/* "방금 HIT" 반응일 때만, 그리고 사용자가 탭해서 닫을 때까지 계속 애니메이션을 보여준다.
+                  오늘 마지막 미션을 완료하면 이 위로 메시지 다음에 "오늘 전부 완료" 위로가 곧바로
+                  이어서 뜨는데, 그건 HIT 반응이 아니므로 여기서 걸러내지 않으면 애니메이션이
+                  불필요하게 두 번 재생된 것처럼 보인다. */}
+              <StageVisual stage={stage} level={level} door={!!profile.door} swing={comfortIsHit && !!profile.door} className="h-40 w-40 text-[7rem] leading-none" />
             </div>
           </div>
           <p className="text-xs text-slate-400">탭하면 닫혀요</p>
